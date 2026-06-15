@@ -17,10 +17,14 @@
 		2E5FBD119DBB28AF38A4B661 /* ExchangeCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46976FB727B8B8A281AB398B /* ExchangeCalculator.swift */; };
 		2EBC69566B0F32C30B49EFF6 /* FormatterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C006FAC586719EFC706545BC /* FormatterTests.swift */; };
 		AA1111111111111111111111 /* ExchangeRatesSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB1111111111111111111111 /* ExchangeRatesSnapshot.swift */; };
-		AA2222222222222222222222 /* RatesLoadingUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2222222222222222222222 /* RatesLoadingUseCase.swift */; };
-		AA3333333333333333333333 /* ExchangeCalculatorAnalytics.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB3333333333333333333333 /* ExchangeCalculatorAnalytics.swift */; };
+		AA3333333333333333333333 /* ExchangeLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB3333333333333333333333 /* ExchangeLogger.swift */; };
 		AA4444444444444444444444 /* ExchangeCalculatorStateReducer.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB4444444444444444444444 /* ExchangeCalculatorStateReducer.swift */; };
 		AA5555555555555555555555 /* ExchangeCalculatorStateReducerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB5555555555555555555555 /* ExchangeCalculatorStateReducerTests.swift */; };
+		DA1000000000000000000001 /* ExchangeCalculatorErrorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA1000000000000000000002 /* ExchangeCalculatorErrorView.swift */; };
+		DA1000000000000000000003 /* ExchangeCalculatorHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA1000000000000000000004 /* ExchangeCalculatorHeaderView.swift */; };
+		DA1000000000000000000005 /* ExchangeCalculatorLoadedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA1000000000000000000006 /* ExchangeCalculatorLoadedView.swift */; };
+		DA1000000000000000000007 /* LoadingCalculatorSkeleton.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA1000000000000000000008 /* LoadingCalculatorSkeleton.swift */; };
+		DA1000000000000000000009 /* ExchangeCalculatorActions.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA100000000000000000000A /* ExchangeCalculatorActions.swift */; };
 		AD1111111111111111111111 /* RatesRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD1111111111111111111112 /* RatesRepository.swift */; };
 		AD2222222222222222222221 /* LiveRatesRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD2222222222222222222222 /* LiveRatesRepository.swift */; };
 		AD3333333333333333333331 /* RatesSnapshotCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD3333333333333333333332 /* RatesSnapshotCache.swift */; };
@@ -77,10 +81,14 @@
 		A8959B4026D24DD0AFA47240 /* CurrencyPickerSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurrencyPickerSheet.swift; sourceTree = "<group>"; };
 		A8C8FB89906F47ADAE867FA8 /* ExchangeCalculatorViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExchangeCalculatorViewModelTests.swift; sourceTree = "<group>"; };
 		AB1111111111111111111111 /* ExchangeRatesSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExchangeRatesSnapshot.swift; sourceTree = "<group>"; };
-		AB2222222222222222222222 /* RatesLoadingUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RatesLoadingUseCase.swift; sourceTree = "<group>"; };
-		AB3333333333333333333333 /* ExchangeCalculatorAnalytics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExchangeCalculatorAnalytics.swift; sourceTree = "<group>"; };
+		AB3333333333333333333333 /* ExchangeLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExchangeLogger.swift; sourceTree = "<group>"; };
 		AB4444444444444444444444 /* ExchangeCalculatorStateReducer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExchangeCalculatorStateReducer.swift; sourceTree = "<group>"; };
 		AB5555555555555555555555 /* ExchangeCalculatorStateReducerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExchangeCalculatorStateReducerTests.swift; sourceTree = "<group>"; };
+		DA1000000000000000000002 /* ExchangeCalculatorErrorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExchangeCalculatorErrorView.swift; sourceTree = "<group>"; };
+		DA1000000000000000000004 /* ExchangeCalculatorHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExchangeCalculatorHeaderView.swift; sourceTree = "<group>"; };
+		DA1000000000000000000006 /* ExchangeCalculatorLoadedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExchangeCalculatorLoadedView.swift; sourceTree = "<group>"; };
+		DA1000000000000000000008 /* LoadingCalculatorSkeleton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadingCalculatorSkeleton.swift; sourceTree = "<group>"; };
+		DA100000000000000000000A /* ExchangeCalculatorActions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExchangeCalculatorActions.swift; sourceTree = "<group>"; };
 		AD1111111111111111111112 /* RatesRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RatesRepository.swift; sourceTree = "<group>"; };
 		AD2222222222222222222222 /* LiveRatesRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveRatesRepository.swift; sourceTree = "<group>"; };
 		AD3333333333333333333332 /* RatesSnapshotCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RatesSnapshotCache.swift; sourceTree = "<group>"; };
@@ -237,9 +245,8 @@
 		AC1111111111111111111113 /* Application */ = {
 			isa = PBXGroup;
 			children = (
-				AB3333333333333333333333 /* ExchangeCalculatorAnalytics.swift */,
+				AB3333333333333333333333 /* ExchangeLogger.swift */,
 				AB1111111111111111111111 /* ExchangeRatesSnapshot.swift */,
-				AB2222222222222222222222 /* RatesLoadingUseCase.swift */,
 				AD1111111111111111111112 /* RatesRepository.swift */,
 			);
 			path = Application;
@@ -320,10 +327,15 @@
 		AC1111111111111111111114 /* Calculator */ = {
 			isa = PBXGroup;
 			children = (
+				DA100000000000000000000A /* ExchangeCalculatorActions.swift */,
 				C5F56970E2574313AE22AE87 /* ExchangeCalculatorState.swift */,
 				AB4444444444444444444444 /* ExchangeCalculatorStateReducer.swift */,
+				DA1000000000000000000002 /* ExchangeCalculatorErrorView.swift */,
+				DA1000000000000000000004 /* ExchangeCalculatorHeaderView.swift */,
+				DA1000000000000000000006 /* ExchangeCalculatorLoadedView.swift */,
 				B53AE3F1EC5B45179F4DD535 /* ExchangeCalculatorView.swift */,
 				F3B7855775A742739CF21C80 /* ExchangeCalculatorViewModel.swift */,
+				DA1000000000000000000008 /* LoadingCalculatorSkeleton.swift */,
 			);
 			path = Calculator;
 			sourceTree = "<group>";
@@ -446,10 +458,14 @@
 					6A88DE4528424129B3E86423 /* CurrencyFlagView.swift in Sources */,
 					C7D74373D09F40C096672E28 /* CurrencyPickerSheet.swift in Sources */,
 					2E5FBD119DBB28AF38A4B661 /* ExchangeCalculator.swift in Sources */,
-				AA3333333333333333333333 /* ExchangeCalculatorAnalytics.swift in Sources */,
+				AA3333333333333333333333 /* ExchangeLogger.swift in Sources */,
 				B94FE126C4AA483FAC5B5DA5 /* ExchangeCalculatorCopy.swift in Sources */,
 				AA4444444444444444444444 /* ExchangeCalculatorStateReducer.swift in Sources */,
 				5809C8F8D5E44935806E486A /* ExchangeCalculatorState.swift in Sources */,
+				DA1000000000000000000009 /* ExchangeCalculatorActions.swift in Sources */,
+				DA1000000000000000000001 /* ExchangeCalculatorErrorView.swift in Sources */,
+				DA1000000000000000000003 /* ExchangeCalculatorHeaderView.swift in Sources */,
+				DA1000000000000000000005 /* ExchangeCalculatorLoadedView.swift in Sources */,
 				9FE9961370EB4A8EBA9D5644 /* ExchangeCalculatorView.swift in Sources */,
 				E13D4E9E55FD4F5B8D6C5A5D /* ExchangeCalculatorViewModel.swift in Sources */,
 				E09022070FD74C9BA0F25F5F /* ExchangeDesign.swift in Sources */,
@@ -461,11 +477,11 @@
 					1579F6A7E5C64BF9B53554A1 /* LiveRatesService.swift in Sources */,
 					9442B53AA24B8264EAB3D755 /* QuoteSide.swift in Sources */,
 				F1BEF31163ABB6F0F5DA9A34 /* RateFormatter.swift in Sources */,
-				AA2222222222222222222222 /* RatesLoadingUseCase.swift in Sources */,
 				AD1111111111111111111111 /* RatesRepository.swift in Sources */,
 				CBF32A0C71DF44459A5E6A30 /* RatesService.swift in Sources */,
 				AD3333333333333333333331 /* RatesSnapshotCache.swift in Sources */,
 				BC910385960244708C2099BA /* SwapButton.swift in Sources */,
+				DA1000000000000000000007 /* LoadingCalculatorSkeleton.swift in Sources */,
 				7A6056B223604B7C8B39E4D3 /* TickerResponse.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

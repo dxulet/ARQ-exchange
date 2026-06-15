@@ -13,30 +13,30 @@ struct ARQExchangeApp: App {
 
 private struct AppDependencies {
     let ratesRepository: RatesRepository
-    let analyticsClient: AnalyticsClient
+    let logger: ExchangeLogger
 
     static let live: AppDependencies = {
-        let diagnostics = OSLogRatesDiagnostics()
+        let logger = ExchangeLogger.osLog()
         let ratesService = LiveRatesService(
             client: APIClient(),
-            diagnostics: diagnostics
+            logger: logger
         )
-        let cache = DiskRatesSnapshotCache(diagnostics: diagnostics)
+        let cache = DiskRatesSnapshotCache(logger: logger)
 
         return AppDependencies(
             ratesRepository: LiveRatesRepository(
                 ratesService: ratesService,
                 cache: cache,
-                diagnostics: diagnostics
+                logger: logger
             ),
-            analyticsClient: OSLogAnalyticsClient()
+            logger: logger
         )
     }()
 
     var exchangeFeatureDependencies: ExchangeFeatureDependencies {
         ExchangeFeatureDependencies(
             ratesRepository: ratesRepository,
-            analyticsClient: analyticsClient
+            logger: logger
         )
     }
 }

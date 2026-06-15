@@ -11,7 +11,7 @@ final class ExchangeCalculatorViewModelTests: XCTestCase {
             )
         )
 
-        await viewModel.load()
+        await viewModel.load().value
 
         XCTAssertEqual(viewModel.state.loadState, .loaded)
         XCTAssertEqual(viewModel.state.availableCurrencies, [.mxn, .cop])
@@ -26,7 +26,7 @@ final class ExchangeCalculatorViewModelTests: XCTestCase {
             service: MockRatesService(loadError: TestError.expected)
         )
 
-        await viewModel.load()
+        await viewModel.load().value
 
         XCTAssertEqual(
             viewModel.state.loadState,
@@ -39,7 +39,7 @@ final class ExchangeCalculatorViewModelTests: XCTestCase {
             service: MockRatesService(loadError: CancellationError())
         )
 
-        await viewModel.load()
+        await viewModel.load().value
 
         XCTAssertEqual(viewModel.state.loadState, .idle)
     }
@@ -56,8 +56,8 @@ final class ExchangeCalculatorViewModelTests: XCTestCase {
         )
         let viewModel = makeViewModel(service: service)
 
-        await viewModel.load()
-        await viewModel.retry()
+        await viewModel.load().value
+        await viewModel.retry().value
 
         XCTAssertEqual(viewModel.state.loadState, .loaded)
         XCTAssertEqual(viewModel.state.selectedCurrency, .mxn)
@@ -72,7 +72,7 @@ final class ExchangeCalculatorViewModelTests: XCTestCase {
             )
         )
 
-        await viewModel.load()
+        await viewModel.load().value
 
         XCTAssertEqual(viewModel.state.loadState, .loaded)
         XCTAssertEqual(viewModel.state.availableCurrencies, CurrencyCode.localCurrencies)
@@ -95,7 +95,7 @@ final class ExchangeCalculatorViewModelTests: XCTestCase {
             )
         )
 
-        await viewModel.load()
+        await viewModel.load().value
 
         XCTAssertEqual(viewModel.state.loadState, .loaded)
         XCTAssertEqual(viewModel.rateText, "1 USDc = 18.4097 MXN")
@@ -170,17 +170,15 @@ final class ExchangeCalculatorViewModelTests: XCTestCase {
                 rates: [TestFixtures.mxnRate, TestFixtures.copRate]
             )
         )
-        await viewModel.load()
+        await viewModel.load().value
         return viewModel
     }
 
     private func makeViewModel(service: RatesService) -> ExchangeCalculatorViewModel {
         ExchangeCalculatorViewModel(
-            loadingUseCase: RatesLoadingUseCase(
-                ratesRepository: LiveRatesRepository(
-                    ratesService: service,
-                    cache: InMemoryRatesSnapshotCache()
-                )
+            ratesRepository: LiveRatesRepository(
+                ratesService: service,
+                cache: InMemoryRatesSnapshotCache()
             )
         )
     }

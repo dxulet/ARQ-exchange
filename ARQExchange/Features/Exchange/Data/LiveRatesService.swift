@@ -1,16 +1,16 @@
 struct LiveRatesService: RatesService {
     private let client: APIClientSending
     private let tickerMapper: TickerMapper
-    private let diagnostics: RatesDiagnostics
+    private let logger: ExchangeLogger
 
     init(
         client: APIClientSending,
         tickerMapper: TickerMapper = TickerMapper(),
-        diagnostics: RatesDiagnostics = NoopRatesDiagnostics()
+        logger: ExchangeLogger = .disabled
     ) {
         self.client = client
         self.tickerMapper = tickerMapper
-        self.diagnostics = diagnostics
+        self.logger = logger
     }
 
     func fetchAvailableCurrencies() async throws -> CurrencyDiscoveryResult {
@@ -19,7 +19,7 @@ struct LiveRatesService: RatesService {
             let currencies = localCurrencies(from: currencyCodeResponse.map(CurrencyCode.init(apiCode:)))
 
             guard !currencies.isEmpty else {
-                diagnostics.record(.currencyDiscoveryFallback(source: .fallbackEmpty))
+                logger.log(.currencyDiscoveryFallback(source: .fallbackEmpty))
                 return CurrencyDiscoveryResult(currencies: CurrencyCode.localCurrencies, source: .fallbackEmpty)
             }
 
@@ -27,7 +27,7 @@ struct LiveRatesService: RatesService {
         } catch is CancellationError {
             throw CancellationError()
         } catch {
-            diagnostics.record(.currencyDiscoveryFallback(source: .fallbackError))
+            logger.log(.currencyDiscoveryFallback(source: .fallbackError))
             return CurrencyDiscoveryResult(currencies: CurrencyCode.localCurrencies, source: .fallbackError)
         }
     }
@@ -46,7 +46,7 @@ struct LiveRatesService: RatesService {
             do {
                 rates.append(try tickerMapper.makeExchangeRate(from: response))
             } catch {
-                diagnostics.record(
+                logger.log(
                     .tickerMappingSkipped(
                         book: response.currencyPairCode,
                         reason: String(describing: error)

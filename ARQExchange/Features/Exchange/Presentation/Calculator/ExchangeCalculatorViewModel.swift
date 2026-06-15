@@ -5,19 +5,21 @@ import Foundation
 final class ExchangeCalculatorViewModel: ObservableObject {
     @Published private(set) var state: ExchangeCalculatorState
 
-    private let loadingUseCase: RatesLoadingUseCase
-    private let analyticsClient: AnalyticsClient
+    private let ratesRepository: RatesRepository
+    private let logger: ExchangeLogger
     private let stateReducer: ExchangeCalculatorStateReducer
+    private var loadTask: Task<Void, Never>?
+    private var loadRequestID = 0
     private var hasTrackedFirstAmountEdit = false
 
     init(
-        loadingUseCase: RatesLoadingUseCase,
+        ratesRepository: RatesRepository,
         initialState: ExchangeCalculatorState = ExchangeCalculatorState(),
-        analyticsClient: AnalyticsClient = NoopAnalyticsClient(),
+        logger: ExchangeLogger = .disabled,
         stateReducer: ExchangeCalculatorStateReducer = ExchangeCalculatorStateReducer()
     ) {
-        self.loadingUseCase = loadingUseCase
-        self.analyticsClient = analyticsClient
+        self.ratesRepository = ratesRepository
+        self.logger = logger
         self.stateReducer = stateReducer
         state = initialState
     }
@@ -31,37 +33,65 @@ final class ExchangeCalculatorViewModel: ObservableObject {
         return state.isUsingStaleRates ? ExchangeCalculatorCopy.staleRateText(rateText) : rateText
     }
 
-    func loadIfNeeded() async {
+    @discardableResult
+    func loadIfNeeded() -> Task<Void, Never>? {
         guard state.loadState != .loaded, state.loadState != .loading else {
-            return
+            return nil
         }
 
-        await load()
+        return load()
     }
 
-    func retry() async {
-        analyticsClient.track(.retryTapped)
-        await load(forceRefresh: true)
+    @discardableResult
+    func retry() -> Task<Void, Never> {
+        logger.log(.retryTapped)
+        return load()
     }
 
-    func load(forceRefresh: Bool = false) async {
+    @discardableResult
+    func load() -> Task<Void, Never> {
+        loadTask?.cancel()
+        loadRequestID += 1
+        let requestID = loadRequestID
         let previousState = state
         setState(mutating: { $0.loadState = .loading })
 
-        do {
-            let result = try await loadingUseCase.loadRatesSnapshot(forceRefresh: forceRefresh)
-            applyLoadedSnapshot(result)
-            analyticsClient.track(
-                .ratesLoadSucceeded(
-                    source: result.source,
-                    currencyDiscoverySource: result.snapshot.currencyDiscoverySource
+        let task = Task { [weak self, previousState, requestID] in
+            guard let self else {
+                return
+            }
+
+            do {
+                let result = try await ratesRepository.loadRatesSnapshot()
+                try Task.checkCancellation()
+                guard isCurrentLoad(requestID) else {
+                    return
+                }
+
+                applyLoadedSnapshot(result)
+                logger.log(
+                    .ratesLoadSucceeded(
+                        source: result.source,
+                        currencyDiscoverySource: result.snapshot.currencyDiscoverySource
+                    )
                 )
-            )
-        } catch is CancellationError {
-            setState(previousState)
-        } catch {
-            applyLoadFailure(using: previousState)
+            } catch is CancellationError {
+                guard isCurrentLoad(requestID) else {
+                    return
+                }
+
+                setState(previousState)
+            } catch {
+                guard isCurrentLoad(requestID) else {
+                    return
+                }
+
+                applyLoadFailure(using: previousState)
+            }
         }
+
+        loadTask = task
+        return task
     }
 
     func updateAmount(_ rawText: String, field: InputField) {
@@ -75,12 +105,12 @@ final class ExchangeCalculatorViewModel: ObservableObject {
             return
         }
 
-        analyticsClient.track(.currencySelected(currency))
+        logger.log(.currencySelected(currency))
         setState(stateReducer.currencySelected(currency, in: state))
     }
 
     func swapCurrencies() {
-        analyticsClient.track(.currenciesSwapped)
+        logger.log(.currenciesSwapped)
         setState(stateReducer.currenciesSwapped(in: state))
     }
 
@@ -101,7 +131,7 @@ final class ExchangeCalculatorViewModel: ObservableObject {
                 message: ExchangeCalculatorCopy.loadFailure
             )
         )
-        analyticsClient.track(.ratesLoadFailed)
+        logger.log(.ratesLoadFailed)
     }
 
     private func trackFirstAmountEditIfNeeded(_ sanitizedText: String) {
@@ -110,7 +140,7 @@ final class ExchangeCalculatorViewModel: ObservableObject {
         }
 
         hasTrackedFirstAmountEdit = true
-        analyticsClient.track(.firstAmountEdited)
+        logger.log(.firstAmountEdited)
     }
 
     private func setState(_ nextState: ExchangeCalculatorState) {
@@ -125,5 +155,13 @@ final class ExchangeCalculatorViewModel: ObservableObject {
         var draftState = state
         update(&draftState)
         setState(draftState)
+    }
+
+    private func isCurrentLoad(_ requestID: Int) -> Bool {
+        requestID == loadRequestID
+    }
+
+    deinit {
+        loadTask?.cancel()
     }
 }

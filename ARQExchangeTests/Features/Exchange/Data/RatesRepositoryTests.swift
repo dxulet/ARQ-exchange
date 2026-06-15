@@ -3,7 +3,7 @@ import XCTest
 @testable import ARQExchange
 
 final class RatesRepositoryTests: XCTestCase {
-    func testLoadReturnsFreshCacheWithoutNetworkRequest() async throws {
+    func testLoadFetchesNetworkEvenWhenCacheIsFresh() async throws {
         let now = Date(timeIntervalSince1970: 100)
         let cachedSnapshot = ExchangeRatesSnapshot(
             availableCurrencies: [.mxn],
@@ -11,25 +11,31 @@ final class RatesRepositoryTests: XCTestCase {
             fetchedAt: now.addingTimeInterval(-30)
         )
         let cache = InMemoryRatesSnapshotCache(snapshot: cachedSnapshot)
-        let service = RepositoryMockRatesService(discoveryResult: .failure(.expected))
+        let service = RepositoryMockRatesService(
+            discoveryResult: .success(CurrencyDiscoveryResult(currencies: [.cop], source: .remote)),
+            ratesResult: .success([TestFixtures.copRate])
+        )
         let repository = LiveRatesRepository(
             ratesService: service,
             cache: cache,
-            freshnessInterval: 60,
             now: { now }
         )
 
-        let result = try await repository.loadRatesSnapshot(forceRefresh: false)
+        let result = try await repository.loadRatesSnapshot()
 
-        XCTAssertEqual(result.source, .freshCache)
-        XCTAssertEqual(result.snapshot, cachedSnapshot)
+        XCTAssertEqual(result.source, .network)
+        XCTAssertEqual(result.snapshot.availableCurrencies, [.cop])
+        XCTAssertEqual(result.snapshot.ratesByCurrency, [.cop: TestFixtures.copRate])
+        XCTAssertEqual(result.snapshot.fetchedAt, now)
+        let storedSnapshot = await cache.snapshot()
         let discoveryRequestCount = await service.discoveryRequestCount
         let requestedRateCurrencies = await service.requestedRateCurrencies
-        XCTAssertEqual(discoveryRequestCount, 0)
-        XCTAssertEqual(requestedRateCurrencies, [])
+        XCTAssertEqual(storedSnapshot, result.snapshot)
+        XCTAssertEqual(discoveryRequestCount, 1)
+        XCTAssertEqual(requestedRateCurrencies, [[.cop]])
     }
 
-    func testForceRefreshBypassesFreshCacheAndStoresNetworkSnapshot() async throws {
+    func testLoadStoresNetworkSnapshot() async throws {
         let now = Date(timeIntervalSince1970: 200)
         let cachedSnapshot = ExchangeRatesSnapshot(
             availableCurrencies: [.mxn],
@@ -44,11 +50,10 @@ final class RatesRepositoryTests: XCTestCase {
         let repository = LiveRatesRepository(
             ratesService: service,
             cache: cache,
-            freshnessInterval: 60,
             now: { now }
         )
 
-        let result = try await repository.loadRatesSnapshot(forceRefresh: true)
+        let result = try await repository.loadRatesSnapshot()
 
         XCTAssertEqual(result.source, .network)
         XCTAssertEqual(result.snapshot.availableCurrencies, [.cop])
@@ -71,16 +76,15 @@ final class RatesRepositoryTests: XCTestCase {
         )
         let cache = InMemoryRatesSnapshotCache(snapshot: cachedSnapshot)
         let service = RepositoryMockRatesService(discoveryResult: .failure(.expected))
-        let diagnostics = DiagnosticsRecorder()
+        let logRecorder = TestLogRecorder()
         let repository = LiveRatesRepository(
             ratesService: service,
             cache: cache,
-            diagnostics: diagnostics,
-            freshnessInterval: 60,
+            logger: logRecorder.logger,
             now: { now }
         )
 
-        let result = try await repository.loadRatesSnapshot(forceRefresh: false)
+        let result = try await repository.loadRatesSnapshot()
 
         XCTAssertEqual(result.source, .staleCache)
         XCTAssertEqual(result.snapshot, cachedSnapshot)
@@ -88,7 +92,7 @@ final class RatesRepositoryTests: XCTestCase {
         let requestedRateCurrencies = await service.requestedRateCurrencies
         XCTAssertEqual(discoveryRequestCount, 1)
         XCTAssertEqual(requestedRateCurrencies, [])
-        XCTAssertEqual(diagnostics.events, [.staleCacheServed])
+        XCTAssertEqual(logRecorder.events, [.staleCacheServed])
     }
 
     func testCurrencyDiscoveryTimeoutFallsBackToLocalCurrencies() async throws {
@@ -99,16 +103,16 @@ final class RatesRepositoryTests: XCTestCase {
             ratesResult: .success([TestFixtures.mxnRate]),
             discoveryDelayNanoseconds: 100_000_000
         )
-        let diagnostics = DiagnosticsRecorder()
+        let logRecorder = TestLogRecorder()
         let repository = LiveRatesRepository(
             ratesService: service,
             cache: cache,
-            diagnostics: diagnostics,
+            logger: logRecorder.logger,
             fallbackDelayNanoseconds: 1,
             now: { now }
         )
 
-        let result = try await repository.loadRatesSnapshot(forceRefresh: false)
+        let result = try await repository.loadRatesSnapshot()
 
         XCTAssertEqual(result.source, .network)
         XCTAssertEqual(result.snapshot.availableCurrencies, CurrencyCode.localCurrencies)
@@ -116,7 +120,7 @@ final class RatesRepositoryTests: XCTestCase {
         XCTAssertEqual(result.snapshot.ratesByCurrency, [.mxn: TestFixtures.mxnRate])
         let requestedRateCurrencies = await service.requestedRateCurrencies
         XCTAssertEqual(requestedRateCurrencies, [CurrencyCode.localCurrencies])
-        XCTAssertEqual(diagnostics.events, [.currencyDiscoveryFallback(source: .fallbackTimeout)])
+        XCTAssertEqual(logRecorder.events, [.currencyDiscoveryFallback(source: .fallbackTimeout)])
     }
 }
 
@@ -172,21 +176,4 @@ private enum MockResult<Success: Sendable>: Sendable {
 
 private enum RepositoryTestError: Error, Sendable {
     case expected
-}
-
-private final class DiagnosticsRecorder: RatesDiagnostics, @unchecked Sendable {
-    private let lock = NSLock()
-    private var recordedEvents: [RatesDiagnosticEvent] = []
-
-    var events: [RatesDiagnosticEvent] {
-        lock.lock()
-        defer { lock.unlock() }
-        return recordedEvents
-    }
-
-    func record(_ event: RatesDiagnosticEvent) {
-        lock.lock()
-        recordedEvents.append(event)
-        lock.unlock()
-    }
 }

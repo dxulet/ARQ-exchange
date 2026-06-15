@@ -1,13 +1,14 @@
 import SwiftUI
 
-struct CurrencyAmountField: View {
+@MainActor
+struct CurrencyAmountField<Presenter: CurrencyPickerPresenting>: View {
     let field: InputField
     let currency: CurrencyCode
     @Binding var amountText: String
     let isCurrencySelectable: Bool
     let hasRate: Bool
     let focusedField: FocusState<InputField?>.Binding
-    let onSelectCurrency: () -> Void
+    let currencyPickerPresenter: Presenter
 
     private var metadata: CurrencyMetadata {
         CurrencyMetadataCatalog.metadata(for: currency)
@@ -41,7 +42,7 @@ struct CurrencyAmountField: View {
     @ViewBuilder
     private var currencyControl: some View {
         if isCurrencySelectable {
-            Button(action: onSelectCurrency) {
+            Button(action: presentCurrencyPicker) {
                 currencyLabel
             }
             .buttonStyle(.plain)
@@ -52,7 +53,7 @@ struct CurrencyAmountField: View {
     }
 
     private var currencyLabel: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: ExchangeDesign.Layout.currencyLabelSpacing) {
             CurrencyFlagView(metadata: metadata, size: ExchangeDesign.Layout.flagSize)
 
             Text(currency.rawValue)
@@ -67,5 +68,9 @@ struct CurrencyAmountField: View {
             }
         }
         .fixedSize()
+    }
+
+    private func presentCurrencyPicker() {
+        currencyPickerPresenter.presentCurrencyPicker()
     }
 }

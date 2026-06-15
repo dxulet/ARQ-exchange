@@ -7,6 +7,17 @@ enum ExchangeLoadState: Equatable, Sendable {
     case failed(message: String)
 }
 
+struct CurrencyPickerItem: Identifiable, Equatable, Sendable {
+    let currency: CurrencyCode
+    let metadata: CurrencyMetadata
+    let isSelected: Bool
+    let isSelectable: Bool
+
+    var id: String {
+        currency.id
+    }
+}
+
 struct ExchangeCalculatorState: Equatable, Sendable {
     var loadState: ExchangeLoadState = .idle
     var availableCurrencies: [CurrencyCode] = CurrencyCode.localCurrencies
@@ -38,10 +49,10 @@ struct ExchangeCalculatorState: Equatable, Sendable {
         return displayQuoteSide == .bid ? currentRate.bid : currentRate.ask
     }
 
-    var currencyPickerOptions: [CurrencyPickerOption] {
+    var currencyPickerItems: [CurrencyPickerItem] {
         availableCurrencies.map { currency in
             let metadata = CurrencyMetadataCatalog.metadata(for: currency)
-            return CurrencyPickerOption(
+            return CurrencyPickerItem(
                 currency: currency,
                 metadata: metadata,
                 isSelected: currency == selectedCurrency,

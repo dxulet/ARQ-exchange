@@ -1,6 +1,5 @@
 enum RatesSnapshotSource: String, Equatable, Sendable {
     case network
-    case freshCache
     case staleCache
 }
 
@@ -10,5 +9,5 @@ struct RatesRepositoryResult: Equatable, Sendable {
 }
 
 protocol RatesRepository: Sendable {
-    func loadRatesSnapshot(forceRefresh: Bool) async throws -> RatesRepositoryResult
+    func loadRatesSnapshot() async throws -> RatesRepositoryResult
 }

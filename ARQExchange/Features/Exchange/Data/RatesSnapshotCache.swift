@@ -7,15 +7,15 @@ protocol RatesSnapshotCaching: Sendable {
 
 actor DiskRatesSnapshotCache: RatesSnapshotCaching {
     private let fileURL: URL
-    private let diagnostics: RatesDiagnostics
+    private let logger: ExchangeLogger
     private var memorySnapshot: ExchangeRatesSnapshot?
 
     init(
         fileURL: URL = DiskRatesSnapshotCache.defaultFileURL(),
-        diagnostics: RatesDiagnostics = NoopRatesDiagnostics()
+        logger: ExchangeLogger = .disabled
     ) {
         self.fileURL = fileURL
-        self.diagnostics = diagnostics
+        self.logger = logger
     }
 
     func snapshot() async -> ExchangeRatesSnapshot? {
@@ -25,7 +25,7 @@ actor DiskRatesSnapshotCache: RatesSnapshotCaching {
 
         let diskResult = await Self.loadSnapshot(from: fileURL)
         if let failureReason = diskResult.failureReason {
-            diagnostics.record(.cacheReadFailed(reason: failureReason))
+            logger.log(.cacheReadFailed(reason: failureReason))
         }
 
         guard let diskSnapshot = diskResult.snapshot else {
@@ -39,7 +39,7 @@ actor DiskRatesSnapshotCache: RatesSnapshotCaching {
     func store(_ snapshot: ExchangeRatesSnapshot) async {
         memorySnapshot = snapshot
         if let failureReason = await Self.storeSnapshot(snapshot, at: fileURL) {
-            diagnostics.record(.cacheWriteFailed(reason: failureReason))
+            logger.log(.cacheWriteFailed(reason: failureReason))
         }
     }
 

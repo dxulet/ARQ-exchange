@@ -12,10 +12,16 @@ final class FormatterTests: XCTestCase {
         XCTAssertEqual(AmountFormatter.string(from: Decimal(9999)), "9,999")
     }
 
-    func testRateFormatterUsesGroupingAndFourFractionDigits() {
+    func testRateFormatterUsesSixSignificantDigits() {
         let value = TestFixtures.decimal("1505.2275")
 
-        XCTAssertEqual(RateFormatter.string(from: value, quote: .ars), "1 USDc = 1,505.2275 ARS")
+        XCTAssertEqual(RateFormatter.string(from: value, quote: .ars), "1 USDc = 1,505.23 ARS")
+    }
+
+    func testRateFormatterKeepsSixDigitCOPRate() {
+        let value = TestFixtures.decimal("3832.42")
+
+        XCTAssertEqual(RateFormatter.string(from: value, quote: .cop), "1 USDc = 3,832.42 COP")
     }
 
     func testRateFormatterHandlesZero() {

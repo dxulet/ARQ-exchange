@@ -11,6 +11,7 @@ enum ExchangeCalculatorCopy {
     static let swapAccessibilityLabel = String(localized: "Swap currencies", comment: "Swap button accessibility label")
     static let closeAccessibilityLabel = String(localized: "Close", comment: "Close button accessibility label")
     static let retryAccessibilityLabel = String(localized: "Retry loading exchange rates", comment: "Retry button accessibility label")
+    static let loadingAccessibilityLabel = String(localized: "Loading exchange rates", comment: "Loading state accessibility label")
 
     static func amountAccessibilityLabel(for currency: CurrencyCode) -> String {
         String(localized: "\(currency.rawValue) amount", comment: "Amount field accessibility label")

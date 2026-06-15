@@ -1,20 +1,13 @@
 import Foundation
 import OSLog
 
-enum AnalyticsEvent: Equatable, Sendable {
+enum ExchangeLogEvent: Equatable, Sendable {
     case ratesLoadSucceeded(source: RatesSnapshotSource, currencyDiscoverySource: CurrencyDiscoverySource)
     case ratesLoadFailed
     case retryTapped
     case currencySelected(CurrencyCode)
     case currenciesSwapped
     case firstAmountEdited
-}
-
-protocol AnalyticsClient: Sendable {
-    func track(_ event: AnalyticsEvent)
-}
-
-enum RatesDiagnosticEvent: Equatable, Sendable {
     case currencyDiscoveryFallback(source: CurrencyDiscoverySource)
     case tickerMappingSkipped(book: String, reason: String)
     case staleCacheServed
@@ -22,32 +15,49 @@ enum RatesDiagnosticEvent: Equatable, Sendable {
     case cacheWriteFailed(reason: String)
 }
 
-protocol RatesDiagnostics: Sendable {
-    func record(_ event: RatesDiagnosticEvent)
-}
+struct ExchangeLogger: Sendable {
+    private let record: @Sendable (ExchangeLogEvent) -> Void
 
-struct NoopAnalyticsClient: AnalyticsClient {
-    func track(_ event: AnalyticsEvent) {}
-}
-
-struct NoopRatesDiagnostics: RatesDiagnostics {
-    func record(_ event: RatesDiagnosticEvent) {}
-}
-
-struct OSLogAnalyticsClient: AnalyticsClient {
-    private let logger: Logger
-
-    init(
-        logger: Logger = Logger(
-            subsystem: Bundle.main.bundleIdentifier ?? "ARQExchange",
-            category: "Exchange"
-        )
-    ) {
-        self.logger = logger
+    init(record: @escaping @Sendable (ExchangeLogEvent) -> Void = { _ in }) {
+        self.record = record
     }
 
-    func track(_ event: AnalyticsEvent) {
-        switch event {
+    func log(_ event: ExchangeLogEvent) {
+        record(event)
+    }
+
+    static let disabled = ExchangeLogger()
+
+    static func osLog(subsystem: String = Bundle.main.bundleIdentifier ?? "ARQExchange") -> ExchangeLogger {
+        let analyticsLogger = Logger(subsystem: subsystem, category: "Exchange")
+        let diagnosticsLogger = Logger(subsystem: subsystem, category: "ExchangeDiagnostics")
+
+        return ExchangeLogger { event in
+            event.write(analyticsLogger: analyticsLogger, diagnosticsLogger: diagnosticsLogger)
+        }
+    }
+}
+
+private extension ExchangeLogEvent {
+    func write(analyticsLogger: Logger, diagnosticsLogger: Logger) {
+        if isDiagnostic {
+            writeDiagnostic(to: diagnosticsLogger)
+        } else {
+            writeAnalytics(to: analyticsLogger)
+        }
+    }
+
+    var isDiagnostic: Bool {
+        switch self {
+        case .currencyDiscoveryFallback, .tickerMappingSkipped, .staleCacheServed, .cacheReadFailed, .cacheWriteFailed:
+            return true
+        case .ratesLoadSucceeded, .ratesLoadFailed, .retryTapped, .currencySelected, .currenciesSwapped, .firstAmountEdited:
+            return false
+        }
+    }
+
+    func writeAnalytics(to logger: Logger) {
+        switch self {
         case let .ratesLoadSucceeded(source, currencyDiscoverySource):
             let discoverySource = currencyDiscoverySource.rawValue
             logger.info("rates_load_succeeded source=\(source.rawValue, privacy: .public) discovery=\(discoverySource, privacy: .public)")
@@ -61,24 +71,13 @@ struct OSLogAnalyticsClient: AnalyticsClient {
             logger.info("currencies_swapped")
         case .firstAmountEdited:
             logger.info("first_amount_edited")
+        case .currencyDiscoveryFallback, .tickerMappingSkipped, .staleCacheServed, .cacheReadFailed, .cacheWriteFailed:
+            break
         }
     }
-}
 
-struct OSLogRatesDiagnostics: RatesDiagnostics {
-    private let logger: Logger
-
-    init(
-        logger: Logger = Logger(
-            subsystem: Bundle.main.bundleIdentifier ?? "ARQExchange",
-            category: "ExchangeDiagnostics"
-        )
-    ) {
-        self.logger = logger
-    }
-
-    func record(_ event: RatesDiagnosticEvent) {
-        switch event {
+    func writeDiagnostic(to logger: Logger) {
+        switch self {
         case let .currencyDiscoveryFallback(source):
             logger.warning("currency_discovery_fallback source=\(source.rawValue, privacy: .public)")
         case let .tickerMappingSkipped(book, reason):
@@ -89,6 +88,8 @@ struct OSLogRatesDiagnostics: RatesDiagnostics {
             logger.warning("rates_cache_read_failed reason=\(reason, privacy: .public)")
         case let .cacheWriteFailed(reason):
             logger.error("rates_cache_write_failed reason=\(reason, privacy: .public)")
+        case .ratesLoadSucceeded, .ratesLoadFailed, .retryTapped, .currencySelected, .currenciesSwapped, .firstAmountEdited:
+            break
         }
     }
 }

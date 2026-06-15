@@ -71,15 +71,15 @@ final class NetworkingTests: XCTestCase {
         let client = MockAPIClient(
             tickerCurrenciesResult: .failure(APIError.httpStatus(403, endpoint: .tickerCurrencies))
         )
-        let diagnostics = DiagnosticsRecorder()
-        let service = LiveRatesService(client: client, diagnostics: diagnostics)
+        let logRecorder = TestLogRecorder()
+        let service = LiveRatesService(client: client, logger: logRecorder.logger)
 
         let discovery = try await service.fetchAvailableCurrencies()
 
         XCTAssertEqual(discovery.currencies, [.mxn, .ars, .brl, .cop])
         XCTAssertEqual(discovery.source, .fallbackError)
         XCTAssertEqual(client.requestedEndpoints, [.tickerCurrencies])
-        XCTAssertEqual(diagnostics.events, [.currencyDiscoveryFallback(source: .fallbackError)])
+        XCTAssertEqual(logRecorder.events, [.currencyDiscoveryFallback(source: .fallbackError)])
     }
 
     func testLiveRatesServicePreservesCancellationWhenCurrenciesRequestIsCancelled() async {
@@ -142,15 +142,15 @@ final class NetworkingTests: XCTestCase {
         let client = MockAPIClient(
             tickersResult: .success([validTicker, invalidTicker])
         )
-        let diagnostics = DiagnosticsRecorder()
-        let service = LiveRatesService(client: client, diagnostics: diagnostics)
+        let logRecorder = TestLogRecorder()
+        let service = LiveRatesService(client: client, logger: logRecorder.logger)
 
         let rates = try await service.fetchRates(for: [.mxn, .ars])
 
         XCTAssertEqual(rates, [TestFixtures.apiMXNRate])
         XCTAssertEqual(client.requestedEndpoints, [.tickers(currencies: [.mxn, .ars])])
-        XCTAssertEqual(diagnostics.events.count, 1)
-        guard case let .tickerMappingSkipped(book, reason) = diagnostics.events.first else {
+        XCTAssertEqual(logRecorder.events.count, 1)
+        guard case let .tickerMappingSkipped(book, reason) = logRecorder.events.first else {
             return XCTFail("Expected ticker mapping diagnostic")
         }
         XCTAssertEqual(book, "usdc_ars")
@@ -212,21 +212,4 @@ private final class MockAPIClient: APIClientSending, @unchecked Sendable {
 
 private enum TestError: Error {
     case unexpectedType
-}
-
-private final class DiagnosticsRecorder: RatesDiagnostics, @unchecked Sendable {
-    private let lock = NSLock()
-    private var recordedEvents: [RatesDiagnosticEvent] = []
-
-    var events: [RatesDiagnosticEvent] {
-        lock.lock()
-        defer { lock.unlock() }
-        return recordedEvents
-    }
-
-    func record(_ event: RatesDiagnosticEvent) {
-        lock.lock()
-        recordedEvents.append(event)
-        lock.unlock()
-    }
 }

@@ -33,22 +33,21 @@ The exchange feature is split into small layers that can grow without forcing Sw
 
 - `Domain`: currency codes, exchange rates, quote side, calculator rules, and currency metadata.
 - `Data`: API client, endpoint definitions, live service, disk snapshot cache, and live repository.
-- `Application`: snapshot loading use case, repository contracts, and analytics events.
+- `Application`: repository contracts, exchange snapshots, and exchange log events.
 - `Presentation`: SwiftUI view, ViewModel, state reducer, components, and styling.
 - `Support`: input sanitizing and display formatting.
 
-The `ExchangeCalculatorViewModel` depends on `RatesLoadingUseCase`, not a concrete network service. The use case depends on `RatesRepository`, which owns freshness, timeout fallback, and stale-cache recovery. This keeps UI state transitions deterministic and makes rate-loading behavior testable without live network calls.
+The `ExchangeCalculatorViewModel` depends on `RatesRepository`, not a concrete network service. The repository owns timeout fallback and stale-cache recovery, keeping UI state transitions deterministic and rate-loading behavior testable without live network calls.
 
 `ARQExchangeApp` builds live dependencies once and passes protocol-backed `ExchangeFeatureDependencies` into the feature entry view. Presentation code does not create API clients, repositories, disk caches, or UIKit presenters.
 
 ## Production Readiness
 
 - Disk cache stores the last successful rates snapshot in `Caches/exchange-rates-snapshot.json`.
-- Fresh cache is reused for short reloads; stale cache is used only as a failure fallback.
+- Cached rates are used only as a failure fallback after a network refresh fails.
 - Network timeouts are configured at the `URLSession` level.
 - Currency discovery has a bounded fallback delay so the app does not block indefinitely on a non-critical endpoint.
-- Load outcomes are emitted through an analytics boundary, with an `OSLog` implementation for local diagnostics.
-- Discovery fallbacks, stale-cache fallback, cache failures, and skipped malformed ticker rows are emitted through a diagnostics boundary.
+- Load outcomes, discovery fallbacks, stale-cache fallback, cache failures, and skipped malformed ticker rows are emitted through one `ExchangeLogger` boundary with an `OSLog` implementation.
 - The currency picker uses SwiftUI sheet presentation and handles unknown API currency codes without hard-crashing the UI.
 
 ## Run

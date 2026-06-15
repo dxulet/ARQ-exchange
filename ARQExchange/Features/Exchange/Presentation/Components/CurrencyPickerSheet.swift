@@ -1,54 +1,57 @@
 import SwiftUI
 
-struct CurrencyPickerOption: Identifiable, Equatable, Sendable {
-    let currency: CurrencyCode
-    let metadata: CurrencyMetadata
-    let isSelected: Bool
-    let isSelectable: Bool
-
-    var id: String {
-        currency.id
-    }
+private enum CurrencyPickerMetrics {
+    static let horizontalPadding: CGFloat = 16
+    static let topPadding: CGFloat = 30
+    static let contentSpacing: CGFloat = 16
+    static let listBottomPadding: CGFloat = 16
+    static let listVerticalPadding: CGFloat = 8
+    static let listCornerRadius: CGFloat = 16
+    static let closeButtonSize: CGFloat = 32
+    static let rowSpacing: CGFloat = 8
+    static let rowHorizontalPadding: CGFloat = 16
+    static let rowHeight: CGFloat = 62
+    static let flagSize: CGFloat = 28
+    static let flagContainerSize: CGFloat = 40
+    static let selectionIndicatorSize: CGFloat = 24
+    static let selectionIndicatorStrokeWidth: CGFloat = 2
+    static let disabledOpacity: CGFloat = 0.45
 }
 
-struct CurrencyPickerSheet: View {
-    @Environment(\.dismiss) private var dismiss
-
-    private let orderedOptions: [CurrencyPickerOption]
-    let onSelectCurrency: (CurrencyCode) -> Void
-
-    private static let pickerOrder: [CurrencyCode] = [.ars, .cop, .mxn, .brl]
-    private static let pickerOrderRanks: [CurrencyCode: Int] = Dictionary(
-        uniqueKeysWithValues: pickerOrder.enumerated().map { index, currency in
-            (currency, index)
-        }
-    )
-
-    init(
-        options: [CurrencyPickerOption],
-        onSelectCurrency: @escaping (CurrencyCode) -> Void
-    ) {
-        orderedOptions = Self.orderedOptions(from: options)
-        self.onSelectCurrency = onSelectCurrency
-    }
-
+enum CurrencyPickerSheetLayout {
     static func preferredHeight(optionCount: Int) -> CGFloat {
-        let rowContentHeight = CGFloat(optionCount) * ExchangeDesign.Layout.pickerRowHeight
-        let sheetChromeHeight = ExchangeDesign.Layout.sheetTopPadding
-            + ExchangeDesign.Layout.sheetContentSpacing
-            + ExchangeDesign.Layout.closeButtonSize
-        let listPaddingHeight = ExchangeDesign.Layout.sheetListBottomPadding
-            + ExchangeDesign.Layout.sheetListVerticalPadding * 2
+        let rowContentHeight = CGFloat(optionCount) * CurrencyPickerMetrics.rowHeight
+        let sheetChromeHeight = CurrencyPickerMetrics.topPadding
+            + CurrencyPickerMetrics.contentSpacing
+            + CurrencyPickerMetrics.closeButtonSize
+        let listPaddingHeight = CurrencyPickerMetrics.listBottomPadding
+            + CurrencyPickerMetrics.listVerticalPadding * 2
 
         return sheetChromeHeight + rowContentHeight + listPaddingHeight
     }
+}
+
+@MainActor
+struct CurrencyPickerSheet<SelectionHandler: CurrencySelecting>: View {
+    @Environment(\.dismiss) private var dismiss
+
+    private let options: [CurrencyPickerItem]
+    private let selectionHandler: SelectionHandler
+
+    init(
+        options: [CurrencyPickerItem],
+        selectionHandler: SelectionHandler
+    ) {
+        self.options = options
+        self.selectionHandler = selectionHandler
+    }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: ExchangeDesign.Layout.sheetContentSpacing) {
+        VStack(alignment: .leading, spacing: CurrencyPickerMetrics.contentSpacing) {
             header
             currencyList
         }
-        .padding(.top, ExchangeDesign.Layout.sheetTopPadding)
+        .padding(.top, CurrencyPickerMetrics.topPadding)
         .background(ExchangeDesign.Colors.background)
     }
 
@@ -60,87 +63,68 @@ struct CurrencyPickerSheet: View {
 
             Spacer()
 
-            Button {
-                dismiss()
-            } label: {
+            Button(action: closeSheet) {
                 Image(systemName: "xmark")
                     .font(ExchangeDesign.Font.closeIcon)
                     .foregroundStyle(ExchangeDesign.Colors.contentPrimary)
                     .frame(
-                        width: ExchangeDesign.Layout.closeButtonSize,
-                        height: ExchangeDesign.Layout.closeButtonSize
+                        width: CurrencyPickerMetrics.closeButtonSize,
+                        height: CurrencyPickerMetrics.closeButtonSize
                     )
             }
             .buttonStyle(.plain)
             .accessibilityLabel(ExchangeCalculatorCopy.closeAccessibilityLabel)
         }
-        .padding(.horizontal, ExchangeDesign.Layout.sheetHorizontalPadding)
+        .padding(.horizontal, CurrencyPickerMetrics.horizontalPadding)
     }
 
     private var currencyList: some View {
         ScrollView {
             LazyVStack(spacing: 0) {
-                ForEach(orderedOptions) { option in
+                ForEach(options) { option in
                     CurrencyPickerRow(
                         option: option,
-                        onSelectCurrency: selectCurrency
+                        selectionHandler: selectionHandler
                     )
                 }
             }
-            .padding(.vertical, ExchangeDesign.Layout.sheetListVerticalPadding)
-            .padding(.bottom, ExchangeDesign.Layout.sheetListBottomPadding)
+            .padding(.vertical, CurrencyPickerMetrics.listVerticalPadding)
+            .padding(.bottom, CurrencyPickerMetrics.listBottomPadding)
         }
         .frame(height: currencyListHeight)
         .scrollIndicators(.hidden)
         .background(
             ExchangeDesign.Colors.fieldBackground,
-            in: RoundedRectangle(cornerRadius: ExchangeDesign.Layout.sheetListCornerRadius)
+            in: RoundedRectangle(cornerRadius: CurrencyPickerMetrics.listCornerRadius)
         )
-        .padding(.horizontal, ExchangeDesign.Layout.sheetHorizontalPadding)
-    }
-
-    private static func orderedOptions(from options: [CurrencyPickerOption]) -> [CurrencyPickerOption] {
-        options.enumerated()
-            .sorted { left, right in
-                let leftRank = Self.pickerOrderRanks[left.element.currency] ?? Int.max
-                let rightRank = Self.pickerOrderRanks[right.element.currency] ?? Int.max
-
-                if leftRank != rightRank {
-                    return leftRank < rightRank
-                }
-
-                return left.offset < right.offset
-            }
-            .map(\.element)
+        .padding(.horizontal, CurrencyPickerMetrics.horizontalPadding)
     }
 
     private var currencyListHeight: CGFloat {
-        CGFloat(orderedOptions.count) * ExchangeDesign.Layout.pickerRowHeight
-            + ExchangeDesign.Layout.sheetListVerticalPadding * 2
-            + ExchangeDesign.Layout.sheetListBottomPadding
+        CGFloat(options.count) * CurrencyPickerMetrics.rowHeight
+            + CurrencyPickerMetrics.listVerticalPadding * 2
+            + CurrencyPickerMetrics.listBottomPadding
     }
 
-    private func selectCurrency(_ currency: CurrencyCode) {
-        onSelectCurrency(currency)
+    private func closeSheet() {
         dismiss()
     }
 }
 
-private struct CurrencyPickerRow: View {
-    let option: CurrencyPickerOption
-    let onSelectCurrency: (CurrencyCode) -> Void
+@MainActor
+private struct CurrencyPickerRow<SelectionHandler: CurrencySelecting>: View {
+    @Environment(\.dismiss) private var dismiss
+
+    let option: CurrencyPickerItem
+    let selectionHandler: SelectionHandler
 
     var body: some View {
         Button(action: selectCurrency) {
-            HStack(spacing: ExchangeDesign.Layout.pickerRowSpacing) {
-                CurrencyFlagView(metadata: option.metadata, size: ExchangeDesign.Layout.pickerFlagSize)
+            HStack(spacing: CurrencyPickerMetrics.rowSpacing) {
+                CurrencyFlagView(metadata: option.metadata, size: CurrencyPickerMetrics.flagSize)
                     .frame(
-                        width: ExchangeDesign.Layout.pickerFlagContainerSize,
-                        height: ExchangeDesign.Layout.pickerFlagContainerSize
-                    )
-                    .background(
-                        ExchangeDesign.Colors.background,
-                        in: RoundedRectangle(cornerRadius: ExchangeDesign.Layout.pickerFlagContainerCornerRadius)
+                        width: CurrencyPickerMetrics.flagContainerSize,
+                        height: CurrencyPickerMetrics.flagContainerSize
                     )
 
                 Text(option.currency.rawValue)
@@ -152,12 +136,12 @@ private struct CurrencyPickerRow: View {
 
                 selectionIndicator
             }
-            .padding(.horizontal, ExchangeDesign.Layout.pickerRowHorizontalPadding)
-            .frame(height: ExchangeDesign.Layout.pickerRowHeight)
+            .padding(.horizontal, CurrencyPickerMetrics.rowHorizontalPadding)
+            .frame(height: CurrencyPickerMetrics.rowHeight)
         }
         .buttonStyle(.plain)
         .disabled(!option.isSelectable)
-        .opacity(option.isSelectable ? 1 : ExchangeDesign.Layout.disabledCurrencyOpacity)
+        .opacity(option.isSelectable ? 1 : CurrencyPickerMetrics.disabledOpacity)
         .accessibilityLabel(ExchangeCalculatorCopy.selectCurrencyAccessibilityLabel(for: option.currency))
         .accessibilityValue(accessibilityValue)
         .accessibilityAddTraits(isSelected ? .isSelected : [])
@@ -180,19 +164,19 @@ private struct CurrencyPickerRow: View {
             Circle()
                 .stroke(
                     isSelected ? ExchangeDesign.Colors.brand : ExchangeDesign.Colors.separator,
-                    lineWidth: ExchangeDesign.Layout.selectionIndicatorStrokeWidth
+                    lineWidth: CurrencyPickerMetrics.selectionIndicatorStrokeWidth
                 )
                 .frame(
-                    width: ExchangeDesign.Layout.selectionIndicatorSize,
-                    height: ExchangeDesign.Layout.selectionIndicatorSize
+                    width: CurrencyPickerMetrics.selectionIndicatorSize,
+                    height: CurrencyPickerMetrics.selectionIndicatorSize
                 )
 
             if isSelected {
                 Circle()
                     .fill(ExchangeDesign.Colors.brand)
                     .frame(
-                        width: ExchangeDesign.Layout.selectionIndicatorSize,
-                        height: ExchangeDesign.Layout.selectionIndicatorSize
+                        width: CurrencyPickerMetrics.selectionIndicatorSize,
+                        height: CurrencyPickerMetrics.selectionIndicatorSize
                     )
 
                 Image(systemName: "checkmark")
@@ -204,6 +188,7 @@ private struct CurrencyPickerRow: View {
     }
 
     private func selectCurrency() {
-        onSelectCurrency(option.currency)
+        selectionHandler.selectCurrency(option.currency)
+        dismiss()
     }
 }
