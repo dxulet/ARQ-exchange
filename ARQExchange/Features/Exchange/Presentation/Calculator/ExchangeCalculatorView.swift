@@ -87,7 +87,6 @@ struct ExchangeCalculatorView: View {
 
             CurrencyPickerSheet(
                 options: currencyPickerItems,
-                onClose: dismissCurrencyPicker,
                 onSelectCurrency: selectCurrency
             )
             .presentationDetents([
@@ -139,12 +138,7 @@ struct ExchangeCalculatorView: View {
         isCurrencyPickerPresented = true
     }
 
-    private func dismissCurrencyPicker() {
-        isCurrencyPickerPresented = false
-    }
-
     private func selectCurrency(_ currency: CurrencyCode) {
         viewModel.selectCurrency(currency)
-        dismissCurrencyPicker()
     }
 }

@@ -42,17 +42,16 @@ enum CurrencyPickerSheetLayout {
 
 @MainActor
 struct CurrencyPickerSheet: View {
+    @Environment(\.dismiss) private var dismiss
+
     private let options: [CurrencyPickerItem]
-    private let onClose: () -> Void
     private let onSelectCurrency: (CurrencyCode) -> Void
 
     init(
         options: [CurrencyPickerItem],
-        onClose: @escaping () -> Void,
         onSelectCurrency: @escaping (CurrencyCode) -> Void
     ) {
         self.options = options
-        self.onClose = onClose
         self.onSelectCurrency = onSelectCurrency
     }
 
@@ -116,12 +115,14 @@ struct CurrencyPickerSheet: View {
     }
 
     private func closeSheet() {
-        onClose()
+        dismiss()
     }
 }
 
 @MainActor
 private struct CurrencyPickerRow: View {
+    @Environment(\.dismiss) private var dismiss
+
     let option: CurrencyPickerItem
     let onSelectCurrency: (CurrencyCode) -> Void
 
@@ -196,5 +197,6 @@ private struct CurrencyPickerRow: View {
 
     private func selectCurrency() {
         onSelectCurrency(option.currency)
+        dismiss()
     }
 }
