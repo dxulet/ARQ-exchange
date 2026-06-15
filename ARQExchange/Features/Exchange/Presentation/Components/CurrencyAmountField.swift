@@ -42,7 +42,7 @@ struct CurrencyAmountField: View {
     @ViewBuilder
     private var currencyControl: some View {
         if isCurrencySelectable {
-            Button(action: presentCurrencyPicker) {
+            Button(action: onSelectCurrency) {
                 currencyLabel
             }
             .buttonStyle(.plain)
@@ -68,10 +68,5 @@ struct CurrencyAmountField: View {
             }
         }
         .fixedSize()
-    }
-
-    private func presentCurrencyPicker() {
-        focusedField.wrappedValue = nil
-        onSelectCurrency()
     }
 }
