@@ -29,7 +29,14 @@ enum ExchangeCalculatorCopy {
         String(localized: "\(currency.rawValue) selected", comment: "Selected currency accessibility value")
     }
 
-    static func staleRateText(_ rateText: String) -> String {
-        String(localized: "\(rateText) - last available rate", comment: "Stale exchange rate label")
+    static func staleRateText(_ rateText: String, fetchedAt: Date?) -> String {
+        guard let fetchedAt else {
+            return String(localized: "\(rateText) - last available rate", comment: "Stale exchange rate label")
+        }
+
+        return String(
+            localized: "\(rateText) - last available \(fetchedAt.formatted(date: .omitted, time: .shortened))",
+            comment: "Stale exchange rate label with timestamp"
+        )
     }
 }

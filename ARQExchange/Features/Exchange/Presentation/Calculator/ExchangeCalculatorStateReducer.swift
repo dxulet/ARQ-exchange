@@ -1,8 +1,3 @@
-struct ExchangeAmountUpdate: Equatable, Sendable {
-    let state: ExchangeCalculatorState
-    let sanitizedText: String
-}
-
 struct ExchangeCalculatorStateReducer: Sendable {
     private let calculator: ExchangeCalculator
 
@@ -24,7 +19,8 @@ struct ExchangeCalculatorStateReducer: Sendable {
             topAmountText: previousState.topAmountText,
             bottomAmountText: previousState.bottomAmountText,
             activeField: previousState.activeField,
-            isUsingStaleRates: ratesSource == .staleCache
+            isUsingStaleRates: ratesSource == .staleCache,
+            ratesFetchedAt: snapshot.fetchedAt
         )
         updateConvertedAmount(in: &loadedState)
         return loadedState
@@ -40,7 +36,7 @@ struct ExchangeCalculatorStateReducer: Sendable {
         rawText: String,
         field: InputField,
         in currentState: ExchangeCalculatorState
-    ) -> ExchangeAmountUpdate {
+    ) -> ExchangeCalculatorState {
         let sanitizedText = InputSanitizer.sanitize(rawText)
         var nextState = currentState
         nextState.activeField = field
@@ -48,13 +44,13 @@ struct ExchangeCalculatorStateReducer: Sendable {
         guard !sanitizedText.isEmpty else {
             nextState.topAmountText = ""
             nextState.bottomAmountText = ""
-            return ExchangeAmountUpdate(state: nextState, sanitizedText: sanitizedText)
+            return nextState
         }
 
         nextState.setAmountText(sanitizedText, for: field)
         updateConvertedAmount(in: &nextState)
 
-        return ExchangeAmountUpdate(state: nextState, sanitizedText: sanitizedText)
+        return nextState
     }
 
     func currencySelected(_ currency: CurrencyCode, in currentState: ExchangeCalculatorState) -> ExchangeCalculatorState {

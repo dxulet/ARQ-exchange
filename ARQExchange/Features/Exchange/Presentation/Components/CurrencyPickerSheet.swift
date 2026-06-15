@@ -7,7 +7,8 @@ private enum CurrencyPickerMetrics {
     static let listBottomPadding: CGFloat = 16
     static let listVerticalPadding: CGFloat = 8
     static let listCornerRadius: CGFloat = 16
-    static let closeButtonSize: CGFloat = 32
+    static let closeButtonVisualSize: CGFloat = 32
+    static let maximumListHeight: CGFloat = 420
     static let rowSpacing: CGFloat = 8
     static let rowHorizontalPadding: CGFloat = 16
     static let rowHeight: CGFloat = 62
@@ -20,30 +21,39 @@ private enum CurrencyPickerMetrics {
 
 enum CurrencyPickerSheetLayout {
     static func preferredHeight(optionCount: Int) -> CGFloat {
-        let rowContentHeight = CGFloat(optionCount) * CurrencyPickerMetrics.rowHeight
         let sheetChromeHeight = CurrencyPickerMetrics.topPadding
             + CurrencyPickerMetrics.contentSpacing
-            + CurrencyPickerMetrics.closeButtonSize
+            + ExchangeDesign.Layout.minimumHitTarget
+
+        return sheetChromeHeight + listHeight(optionCount: optionCount)
+    }
+
+    static func listHeight(optionCount: Int) -> CGFloat {
+        let rowContentHeight = CGFloat(optionCount) * CurrencyPickerMetrics.rowHeight
         let listPaddingHeight = CurrencyPickerMetrics.listBottomPadding
             + CurrencyPickerMetrics.listVerticalPadding * 2
 
-        return sheetChromeHeight + rowContentHeight + listPaddingHeight
+        return min(
+            rowContentHeight + listPaddingHeight,
+            CurrencyPickerMetrics.maximumListHeight
+        )
     }
 }
 
 @MainActor
-struct CurrencyPickerSheet<SelectionHandler: CurrencySelecting>: View {
-    @Environment(\.dismiss) private var dismiss
-
+struct CurrencyPickerSheet: View {
     private let options: [CurrencyPickerItem]
-    private let selectionHandler: SelectionHandler
+    private let onClose: () -> Void
+    private let onSelectCurrency: (CurrencyCode) -> Void
 
     init(
         options: [CurrencyPickerItem],
-        selectionHandler: SelectionHandler
+        onClose: @escaping () -> Void,
+        onSelectCurrency: @escaping (CurrencyCode) -> Void
     ) {
         self.options = options
-        self.selectionHandler = selectionHandler
+        self.onClose = onClose
+        self.onSelectCurrency = onSelectCurrency
     }
 
     var body: some View {
@@ -68,10 +78,11 @@ struct CurrencyPickerSheet<SelectionHandler: CurrencySelecting>: View {
                     .font(ExchangeDesign.Font.closeIcon)
                     .foregroundStyle(ExchangeDesign.Colors.contentPrimary)
                     .frame(
-                        width: CurrencyPickerMetrics.closeButtonSize,
-                        height: CurrencyPickerMetrics.closeButtonSize
+                        width: CurrencyPickerMetrics.closeButtonVisualSize,
+                        height: CurrencyPickerMetrics.closeButtonVisualSize
                     )
             }
+            .frame(width: ExchangeDesign.Layout.minimumHitTarget, height: ExchangeDesign.Layout.minimumHitTarget)
             .buttonStyle(.plain)
             .accessibilityLabel(ExchangeCalculatorCopy.closeAccessibilityLabel)
         }
@@ -84,7 +95,7 @@ struct CurrencyPickerSheet<SelectionHandler: CurrencySelecting>: View {
                 ForEach(options) { option in
                     CurrencyPickerRow(
                         option: option,
-                        selectionHandler: selectionHandler
+                        onSelectCurrency: onSelectCurrency
                     )
                 }
             }
@@ -101,22 +112,18 @@ struct CurrencyPickerSheet<SelectionHandler: CurrencySelecting>: View {
     }
 
     private var currencyListHeight: CGFloat {
-        CGFloat(options.count) * CurrencyPickerMetrics.rowHeight
-            + CurrencyPickerMetrics.listVerticalPadding * 2
-            + CurrencyPickerMetrics.listBottomPadding
+        CurrencyPickerSheetLayout.listHeight(optionCount: options.count)
     }
 
     private func closeSheet() {
-        dismiss()
+        onClose()
     }
 }
 
 @MainActor
-private struct CurrencyPickerRow<SelectionHandler: CurrencySelecting>: View {
-    @Environment(\.dismiss) private var dismiss
-
+private struct CurrencyPickerRow: View {
     let option: CurrencyPickerItem
-    let selectionHandler: SelectionHandler
+    let onSelectCurrency: (CurrencyCode) -> Void
 
     var body: some View {
         Button(action: selectCurrency) {
@@ -137,7 +144,7 @@ private struct CurrencyPickerRow<SelectionHandler: CurrencySelecting>: View {
                 selectionIndicator
             }
             .padding(.horizontal, CurrencyPickerMetrics.rowHorizontalPadding)
-            .frame(height: CurrencyPickerMetrics.rowHeight)
+            .frame(minHeight: CurrencyPickerMetrics.rowHeight)
         }
         .buttonStyle(.plain)
         .disabled(!option.isSelectable)
@@ -188,7 +195,6 @@ private struct CurrencyPickerRow<SelectionHandler: CurrencySelecting>: View {
     }
 
     private func selectCurrency() {
-        selectionHandler.selectCurrency(option.currency)
-        dismiss()
+        onSelectCurrency(option.currency)
     }
 }

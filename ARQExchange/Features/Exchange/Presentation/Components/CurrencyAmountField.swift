@@ -1,14 +1,14 @@
 import SwiftUI
 
 @MainActor
-struct CurrencyAmountField<Presenter: CurrencyPickerPresenting>: View {
+struct CurrencyAmountField: View {
     let field: InputField
     let currency: CurrencyCode
     @Binding var amountText: String
     let isCurrencySelectable: Bool
     let hasRate: Bool
     let focusedField: FocusState<InputField?>.Binding
-    let currencyPickerPresenter: Presenter
+    let onSelectCurrency: () -> Void
 
     private var metadata: CurrencyMetadata {
         CurrencyMetadataCatalog.metadata(for: currency)
@@ -33,7 +33,7 @@ struct CurrencyAmountField<Presenter: CurrencyPickerPresenting>: View {
             .focused(focusedField, equals: field)
             .accessibilityLabel(ExchangeCalculatorCopy.amountAccessibilityLabel(for: currency))
         }
-        .frame(height: ExchangeDesign.Layout.rowHeight)
+        .frame(minHeight: ExchangeDesign.Layout.rowHeight)
         .padding(.horizontal, ExchangeDesign.Layout.rowHorizontalPadding)
         .background(ExchangeDesign.Colors.fieldBackground, in: RoundedRectangle(cornerRadius: ExchangeDesign.Layout.rowCornerRadius))
         .opacity(hasRate ? 1 : ExchangeDesign.Layout.unavailableOpacity)
@@ -71,6 +71,7 @@ struct CurrencyAmountField<Presenter: CurrencyPickerPresenting>: View {
     }
 
     private func presentCurrencyPicker() {
-        currencyPickerPresenter.presentCurrencyPicker()
+        focusedField.wrappedValue = nil
+        onSelectCurrency()
     }
 }

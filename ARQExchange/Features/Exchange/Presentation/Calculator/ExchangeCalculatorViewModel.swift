@@ -10,7 +10,6 @@ final class ExchangeCalculatorViewModel: ObservableObject {
     private let stateReducer: ExchangeCalculatorStateReducer
     private var loadTask: Task<Void, Never>?
     private var loadRequestID = 0
-    private var hasTrackedFirstAmountEdit = false
 
     init(
         ratesRepository: RatesRepository,
@@ -30,7 +29,7 @@ final class ExchangeCalculatorViewModel: ObservableObject {
         }
 
         let rateText = RateFormatter.string(from: displayRate, quote: state.selectedCurrency)
-        return state.isUsingStaleRates ? ExchangeCalculatorCopy.staleRateText(rateText) : rateText
+        return state.isUsingStaleRates ? ExchangeCalculatorCopy.staleRateText(rateText, fetchedAt: state.ratesFetchedAt) : rateText
     }
 
     @discardableResult
@@ -44,7 +43,6 @@ final class ExchangeCalculatorViewModel: ObservableObject {
 
     @discardableResult
     func retry() -> Task<Void, Never> {
-        logger.log(.retryTapped)
         return load()
     }
 
@@ -95,9 +93,7 @@ final class ExchangeCalculatorViewModel: ObservableObject {
     }
 
     func updateAmount(_ rawText: String, field: InputField) {
-        let amountUpdate = stateReducer.amountUpdated(rawText: rawText, field: field, in: state)
-        trackFirstAmountEditIfNeeded(amountUpdate.sanitizedText)
-        setState(amountUpdate.state)
+        setState(stateReducer.amountUpdated(rawText: rawText, field: field, in: state))
     }
 
     func selectCurrency(_ currency: CurrencyCode) {
@@ -105,12 +101,10 @@ final class ExchangeCalculatorViewModel: ObservableObject {
             return
         }
 
-        logger.log(.currencySelected(currency))
         setState(stateReducer.currencySelected(currency, in: state))
     }
 
     func swapCurrencies() {
-        logger.log(.currenciesSwapped)
         setState(stateReducer.currenciesSwapped(in: state))
     }
 
@@ -132,15 +126,6 @@ final class ExchangeCalculatorViewModel: ObservableObject {
             )
         )
         logger.log(.ratesLoadFailed)
-    }
-
-    private func trackFirstAmountEditIfNeeded(_ sanitizedText: String) {
-        guard !hasTrackedFirstAmountEdit, !sanitizedText.isEmpty else {
-            return
-        }
-
-        hasTrackedFirstAmountEdit = true
-        logger.log(.firstAmountEdited)
     }
 
     private func setState(_ nextState: ExchangeCalculatorState) {

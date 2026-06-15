@@ -82,6 +82,19 @@ final class NetworkingTests: XCTestCase {
         XCTAssertEqual(logRecorder.events, [.currencyDiscoveryFallback(source: .fallbackError)])
     }
 
+    func testLiveRatesServiceFallsBackWhenCurrenciesResponseIsEmpty() async throws {
+        let client = MockAPIClient(tickerCurrenciesResult: .success([]))
+        let logRecorder = TestLogRecorder()
+        let service = LiveRatesService(client: client, logger: logRecorder.logger)
+
+        let discovery = try await service.fetchAvailableCurrencies()
+
+        XCTAssertEqual(discovery.currencies, [.mxn, .ars, .brl, .cop])
+        XCTAssertEqual(discovery.source, .fallbackEmpty)
+        XCTAssertEqual(client.requestedEndpoints, [.tickerCurrencies])
+        XCTAssertEqual(logRecorder.events, [.currencyDiscoveryFallback(source: .fallbackEmpty)])
+    }
+
     func testLiveRatesServicePreservesCancellationWhenCurrenciesRequestIsCancelled() async {
         let client = MockAPIClient(
             tickerCurrenciesResult: .failure(CancellationError())
@@ -175,6 +188,119 @@ final class NetworkingTests: XCTestCase {
 
         XCTAssertEqual(client.requestedEndpoints, [.tickers(currencies: [.mxn, .ars])])
     }
+
+    func testAPIClientMapsNon2xxResponse() async throws {
+        URLProtocolStub.requestHandler = { request in
+            (
+                HTTPURLResponse(
+                    url: try XCTUnwrap(request.url),
+                    statusCode: 503,
+                    httpVersion: nil,
+                    headerFields: nil
+                )!,
+                Data()
+            )
+        }
+        addTeardownBlock { URLProtocolStub.requestHandler = nil }
+        let client = makeStubbedAPIClient()
+
+        do {
+            _ = try await client.send(.tickerCurrencies, as: [String].self)
+            XCTFail("Expected non-2xx response to throw")
+        } catch {
+            XCTAssertEqual(error as? APIError, .httpStatus(503, endpoint: .tickerCurrencies))
+        }
+    }
+
+    func testAPIClientMapsDecodingFailure() async throws {
+        URLProtocolStub.requestHandler = { request in
+            (
+                HTTPURLResponse(
+                    url: try XCTUnwrap(request.url),
+                    statusCode: 200,
+                    httpVersion: nil,
+                    headerFields: nil
+                )!,
+                TestFixtures.data(#"{"unexpected":true}"#)
+            )
+        }
+        addTeardownBlock { URLProtocolStub.requestHandler = nil }
+        let client = makeStubbedAPIClient()
+
+        do {
+            _ = try await client.send(.tickerCurrencies, as: [String].self)
+            XCTFail("Expected decoding failure to throw")
+        } catch let apiError as APIError {
+            guard case let .decoding(endpoint, type, _) = apiError else {
+                return XCTFail("Expected decoding error, got \(apiError)")
+            }
+            XCTAssertEqual(endpoint, .tickerCurrencies)
+            XCTAssertEqual(type, String(describing: [String].self))
+        } catch {
+            XCTFail("Expected APIError, got \(error)")
+        }
+    }
+
+    func testAPIClientMapsTransportFailure() async throws {
+        URLProtocolStub.requestHandler = { _ in
+            throw URLError(.notConnectedToInternet)
+        }
+        addTeardownBlock { URLProtocolStub.requestHandler = nil }
+        let client = makeStubbedAPIClient()
+
+        do {
+            _ = try await client.send(.tickerCurrencies, as: [String].self)
+            XCTFail("Expected transport failure to throw")
+        } catch let apiError as APIError {
+            guard case let .transport(endpoint, _) = apiError else {
+                return XCTFail("Expected transport error, got \(apiError)")
+            }
+            XCTAssertEqual(endpoint, .tickerCurrencies)
+        } catch {
+            XCTFail("Expected APIError, got \(error)")
+        }
+    }
+
+    private func makeStubbedAPIClient() -> APIClient {
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.protocolClasses = [URLProtocolStub.self]
+        let session = URLSession(configuration: configuration)
+
+        return APIClient(
+            configuration: APIConfiguration(scheme: "https", host: "example.test"),
+            urlSession: session
+        )
+    }
+}
+
+private final class URLProtocolStub: URLProtocol, @unchecked Sendable {
+    nonisolated(unsafe) static var requestHandler: ((URLRequest) throws -> (HTTPURLResponse, Data))?
+
+    override static func canInit(with request: URLRequest) -> Bool {
+        true
+    }
+
+    override static func canonicalRequest(for request: URLRequest) -> URLRequest {
+        request
+    }
+
+    override func startLoading() {
+        guard let requestHandler = Self.requestHandler else {
+            client?.urlProtocol(self, didFailWithError: TestError.unexpectedType)
+            return
+        }
+
+        do {
+            let (response, data) = try requestHandler(request)
+            client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
+            client?.urlProtocol(self, didLoad: data)
+            client?.urlProtocolDidFinishLoading(self)
+        } catch {
+            client?.urlProtocol(self, didFailWithError: error)
+        }
+    }
+
+    override func stopLoading() {}
 }
 
 private final class MockAPIClient: APIClientSending, @unchecked Sendable {

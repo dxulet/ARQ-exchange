@@ -5,13 +5,15 @@ final class ExchangeCalculatorStateReducerTests: XCTestCase {
     private let reducer = ExchangeCalculatorStateReducer()
 
     func testLoadedStateSelectsFirstCurrencyWithRateAndPreservesActiveInput() {
+        let fetchedAt = Date(timeIntervalSince1970: 1_780_000_000)
         let previousState = ExchangeCalculatorState(
             topAmountText: "10",
             activeField: .top
         )
         let snapshot = ExchangeRatesSnapshot(
             availableCurrencies: [.ars, .mxn],
-            ratesByCurrency: [.mxn: TestFixtures.mxnRate]
+            ratesByCurrency: [.mxn: TestFixtures.mxnRate],
+            fetchedAt: fetchedAt
         )
 
         let state = reducer.loadedState(
@@ -25,6 +27,7 @@ final class ExchangeCalculatorStateReducerTests: XCTestCase {
         XCTAssertEqual(state.selectedCurrency, .mxn)
         XCTAssertEqual(state.bottomAmountText, "184.1")
         XCTAssertTrue(state.isUsingStaleRates)
+        XCTAssertEqual(state.ratesFetchedAt, fetchedAt)
     }
 
     func testAmountUpdatedSanitizesInputAndCalculatesInactiveAmount() {
@@ -35,16 +38,15 @@ final class ExchangeCalculatorStateReducerTests: XCTestCase {
             bottomCurrency: .mxn
         )
 
-        let amountUpdate = reducer.amountUpdated(
+        let state = reducer.amountUpdated(
             rawText: "$9,999",
             field: .top,
             in: loadedState
         )
 
-        XCTAssertEqual(amountUpdate.sanitizedText, "9999")
-        XCTAssertEqual(amountUpdate.state.topAmountText, "9999")
-        XCTAssertEqual(amountUpdate.state.bottomAmountText, "184,078.59")
-        XCTAssertEqual(amountUpdate.state.activeField, .top)
+        XCTAssertEqual(state.topAmountText, "9999")
+        XCTAssertEqual(state.bottomAmountText, "184,078.59")
+        XCTAssertEqual(state.activeField, .top)
     }
 
     func testCurrenciesSwappedPreservesUSDcAmountAndUsesAskRateForLocalTop() {

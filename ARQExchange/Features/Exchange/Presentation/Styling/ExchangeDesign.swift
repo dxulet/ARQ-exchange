@@ -11,6 +11,7 @@ enum ExchangeDesign {
 
     enum Layout {
         static let minimumScaleFactor: CGFloat = 0.8
+        static let minimumHitTarget: CGFloat = 44
         static let rowHeight: CGFloat = 66
         static let rowCornerRadius: CGFloat = 16
         static let rowHorizontalPadding: CGFloat = 16

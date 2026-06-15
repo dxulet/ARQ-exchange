@@ -58,7 +58,7 @@ actor DiskRatesSnapshotCache: RatesSnapshotCaching {
             do {
                 let data = try Data(contentsOf: url)
                 let payload = try JSONDecoder().decode(PersistedRatesSnapshot.self, from: data)
-                return (snapshot: payload.snapshot, failureReason: nil)
+                return (snapshot: try payload.snapshot(), failureReason: nil)
             } catch {
                 return (snapshot: nil, failureReason: String(describing: error))
             }
@@ -85,20 +85,28 @@ actor DiskRatesSnapshotCache: RatesSnapshotCaching {
 }
 
 private struct PersistedRatesSnapshot: Codable, Sendable {
+    private static let supportedSchemaVersion = 1
+
+    let schemaVersion: Int?
     let availableCurrencies: [CurrencyCode]
     let rates: [ExchangeRate]
     let fetchedAt: Date
     let currencyDiscoverySource: CurrencyDiscoverySource
 
     init(snapshot: ExchangeRatesSnapshot) {
+        schemaVersion = Self.supportedSchemaVersion
         availableCurrencies = snapshot.availableCurrencies
         rates = snapshot.ratesByCurrency.values.sorted { $0.quote.rawValue < $1.quote.rawValue }
         fetchedAt = snapshot.fetchedAt
         currencyDiscoverySource = snapshot.currencyDiscoverySource
     }
 
-    var snapshot: ExchangeRatesSnapshot {
-        ExchangeRatesSnapshot(
+    func snapshot() throws -> ExchangeRatesSnapshot {
+        if let schemaVersion, schemaVersion != Self.supportedSchemaVersion {
+            throw PersistedRatesSnapshotError.unsupportedSchemaVersion(schemaVersion)
+        }
+
+        return ExchangeRatesSnapshot(
             availableCurrencies: availableCurrencies,
             ratesByCurrency: Dictionary(
                 rates.map { ($0.quote, $0) },
@@ -107,5 +115,16 @@ private struct PersistedRatesSnapshot: Codable, Sendable {
             fetchedAt: fetchedAt,
             currencyDiscoverySource: currencyDiscoverySource
         )
+    }
+}
+
+private enum PersistedRatesSnapshotError: Error, CustomStringConvertible {
+    case unsupportedSchemaVersion(Int)
+
+    var description: String {
+        switch self {
+        case let .unsupportedSchemaVersion(schemaVersion):
+            return "unsupportedSchemaVersion(\(schemaVersion))"
+        }
     }
 }

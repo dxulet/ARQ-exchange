@@ -4,12 +4,7 @@ import XCTest
 @MainActor
 final class ExchangeCalculatorViewModelTests: XCTestCase {
     func testLoadPublishesCurrenciesRatesAndDefaultSelection() async {
-        let viewModel = makeViewModel(
-            service: MockRatesService(
-                discoveryResult: CurrencyDiscoveryResult(currencies: [.mxn, .cop], source: .remote),
-                rates: [TestFixtures.mxnRate, TestFixtures.copRate]
-            )
-        )
+        let viewModel = makeViewModel(result: .success(.loadedSnapshot()))
 
         await viewModel.load().value
 
@@ -22,9 +17,7 @@ final class ExchangeCalculatorViewModelTests: XCTestCase {
     }
 
     func testLoadFailurePublishesFailedState() async {
-        let viewModel = makeViewModel(
-            service: MockRatesService(loadError: TestError.expected)
-        )
+        let viewModel = makeViewModel(result: .failure(TestError.expected))
 
         await viewModel.load().value
 
@@ -35,9 +28,7 @@ final class ExchangeCalculatorViewModelTests: XCTestCase {
     }
 
     func testLoadCancellationKeepsPreviousState() async {
-        let viewModel = makeViewModel(
-            service: MockRatesService(loadError: CancellationError())
-        )
+        let viewModel = makeViewModel(result: .failure(CancellationError()))
 
         await viewModel.load().value
 
@@ -45,16 +36,12 @@ final class ExchangeCalculatorViewModelTests: XCTestCase {
     }
 
     func testRetryReloadsAfterFailure() async {
-        let service = SequenceRatesService(
-            loadResults: [
+        let viewModel = makeViewModel(
+            results: [
                 .failure(TestError.expected),
-                .success((
-                    discoveryResult: CurrencyDiscoveryResult(currencies: [.mxn], source: .remote),
-                    rates: [TestFixtures.mxnRate]
-                ))
+                .success(.loadedSnapshot(availableCurrencies: [.mxn], ratesByCurrency: [.mxn: TestFixtures.mxnRate]))
             ]
         )
-        let viewModel = makeViewModel(service: service)
 
         await viewModel.load().value
         await viewModel.retry().value
@@ -63,42 +50,26 @@ final class ExchangeCalculatorViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.state.selectedCurrency, .mxn)
     }
 
-    func testLoadFallsBackBeforeFetchingRatesWhenServiceReturnsNoCurrencies() async {
+    func testStaleRepositoryResultMarksStateAndDisplaysStaleCopy() async {
+        let fetchedAt = Date(timeIntervalSince1970: 1_780_000_000)
         let viewModel = makeViewModel(
-            service: MockRatesService(
-                discoveryResult: CurrencyDiscoveryResult(currencies: CurrencyCode.localCurrencies, source: .fallbackEmpty),
-                rates: [TestFixtures.mxnRate],
-                expectedRateRequest: CurrencyCode.localCurrencies
+            result: .success(
+                .loadedSnapshot(
+                    availableCurrencies: [.mxn],
+                    ratesByCurrency: [.mxn: TestFixtures.mxnRate],
+                    source: .staleCache,
+                    fetchedAt: fetchedAt
+                )
             )
         )
 
         await viewModel.load().value
 
         XCTAssertEqual(viewModel.state.loadState, .loaded)
-        XCTAssertEqual(viewModel.state.availableCurrencies, CurrencyCode.localCurrencies)
-        XCTAssertEqual(viewModel.state.selectedCurrency, .mxn)
-        XCTAssertEqual(viewModel.rateText, "1 USDc = 18.4097 MXN")
-    }
-
-    func testLoadKeepsFirstRateWhenServiceReturnsDuplicateQuotes() async {
-        let duplicateMXNRate = ExchangeRate(
-            base: .usdc,
-            quote: .mxn,
-            bid: TestFixtures.decimal("99"),
-            ask: TestFixtures.decimal("100"),
-            timestamp: TestFixtures.timestamp
-        )
-        let viewModel = makeViewModel(
-            service: MockRatesService(
-                discoveryResult: CurrencyDiscoveryResult(currencies: [.mxn], source: .remote),
-                rates: [TestFixtures.mxnRate, duplicateMXNRate]
-            )
-        )
-
-        await viewModel.load().value
-
-        XCTAssertEqual(viewModel.state.loadState, .loaded)
-        XCTAssertEqual(viewModel.rateText, "1 USDc = 18.4097 MXN")
+        XCTAssertTrue(viewModel.state.isUsingStaleRates)
+        XCTAssertEqual(viewModel.state.ratesFetchedAt, fetchedAt)
+        XCTAssertTrue(viewModel.rateText.contains("1 USDc = 18.4097 MXN"))
+        XCTAssertTrue(viewModel.rateText.contains("last available"))
     }
 
     func testEnteringTopUSDcCalculatesBottomLocalAmount() async {
@@ -164,22 +135,18 @@ final class ExchangeCalculatorViewModelTests: XCTestCase {
     }
 
     private func loadedViewModel() async -> ExchangeCalculatorViewModel {
-        let viewModel = makeViewModel(
-            service: MockRatesService(
-                discoveryResult: CurrencyDiscoveryResult(currencies: [.mxn, .cop], source: .remote),
-                rates: [TestFixtures.mxnRate, TestFixtures.copRate]
-            )
-        )
+        let viewModel = makeViewModel(result: .success(.loadedSnapshot()))
         await viewModel.load().value
         return viewModel
     }
 
-    private func makeViewModel(service: RatesService) -> ExchangeCalculatorViewModel {
+    private func makeViewModel(result: Result<RatesRepositoryResult, Error>) -> ExchangeCalculatorViewModel {
+        makeViewModel(results: [result])
+    }
+
+    private func makeViewModel(results: [Result<RatesRepositoryResult, Error>]) -> ExchangeCalculatorViewModel {
         ExchangeCalculatorViewModel(
-            ratesRepository: LiveRatesRepository(
-                ratesService: service,
-                cache: InMemoryRatesSnapshotCache()
-            )
+            ratesRepository: MockRatesRepository(results: results)
         )
     }
 }
@@ -188,62 +155,41 @@ private enum TestError: Error, Sendable {
     case expected
 }
 
-private struct MockRatesService: RatesService {
-    var discoveryResult = CurrencyDiscoveryResult(currencies: [.mxn], source: .remote)
-    var rates: [ExchangeRate] = []
-    var loadError: (any Error & Sendable)?
-    var expectedRateRequest: [CurrencyCode]?
+private actor MockRatesRepository: RatesRepository {
+    private var results: [Result<RatesRepositoryResult, Error>]
 
-    func fetchAvailableCurrencies() async throws -> CurrencyDiscoveryResult {
-        if let loadError {
-            throw loadError
-        }
-
-        return discoveryResult
+    init(results: [Result<RatesRepositoryResult, Error>]) {
+        self.results = results
     }
 
-    func fetchRates(for currencies: [CurrencyCode]) async throws -> [ExchangeRate] {
-        if let loadError {
-            throw loadError
+    func loadRatesSnapshot() async throws -> RatesRepositoryResult {
+        guard !results.isEmpty else {
+            throw TestError.expected
         }
 
-        if let expectedRateRequest {
-            XCTAssertEqual(currencies, expectedRateRequest)
-        }
-
-        return rates
+        return try results.removeFirst().get()
     }
 }
 
-private actor SequenceRatesService: RatesService {
-    typealias LoadPayload = (discoveryResult: CurrencyDiscoveryResult, rates: [ExchangeRate])
-
-    private var loadResults: [Result<LoadPayload, TestError>]
-    private var currentPayload: LoadPayload?
-
-    init(loadResults: [Result<LoadPayload, TestError>]) {
-        self.loadResults = loadResults
-    }
-
-    func fetchAvailableCurrencies() async throws -> CurrencyDiscoveryResult {
-        let payload = try nextPayload()
-        currentPayload = payload
-        return payload.discoveryResult
-    }
-
-    func fetchRates(for currencies: [CurrencyCode]) async throws -> [ExchangeRate] {
-        guard let currentPayload else {
-            throw TestError.expected
-        }
-
-        return currentPayload.rates
-    }
-
-    private func nextPayload() throws -> LoadPayload {
-        guard !loadResults.isEmpty else {
-            throw TestError.expected
-        }
-
-        return try loadResults.removeFirst().get()
+private extension RatesRepositoryResult {
+    static func loadedSnapshot(
+        availableCurrencies: [CurrencyCode] = [.mxn, .cop],
+        ratesByCurrency: [CurrencyCode: ExchangeRate] = [
+            .mxn: TestFixtures.mxnRate,
+            .cop: TestFixtures.copRate
+        ],
+        source: RatesSnapshotSource = .network,
+        fetchedAt: Date = Date(timeIntervalSince1970: 0),
+        currencyDiscoverySource: CurrencyDiscoverySource = .remote
+    ) -> RatesRepositoryResult {
+        RatesRepositoryResult(
+            snapshot: ExchangeRatesSnapshot(
+                availableCurrencies: availableCurrencies,
+                ratesByCurrency: ratesByCurrency,
+                fetchedAt: fetchedAt,
+                currencyDiscoverySource: currencyDiscoverySource
+            ),
+            source: source
+        )
     }
 }

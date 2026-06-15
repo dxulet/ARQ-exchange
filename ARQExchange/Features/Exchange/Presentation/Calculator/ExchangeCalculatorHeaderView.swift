@@ -6,8 +6,6 @@ struct ExchangeCalculatorHeaderView: View {
 
     private enum Metrics {
         static let bottomPadding: CGFloat = 24
-        static let rateHeight: CGFloat = 20
-        static let titleLineHeight: CGFloat = 33
         static let titleTracking: CGFloat = -0.6
     }
 
@@ -19,7 +17,6 @@ struct ExchangeCalculatorHeaderView: View {
                 .foregroundStyle(ExchangeDesign.Colors.contentPrimary)
                 .lineLimit(1)
                 .minimumScaleFactor(ExchangeDesign.Layout.minimumScaleFactor)
-                .frame(height: Metrics.titleLineHeight, alignment: .leading)
 
             Group {
                 if isLoading {
@@ -32,7 +29,6 @@ struct ExchangeCalculatorHeaderView: View {
                         .minimumScaleFactor(ExchangeDesign.Layout.minimumScaleFactor)
                 }
             }
-            .frame(height: Metrics.rateHeight, alignment: .leading)
         }
         .padding(.bottom, Metrics.bottomPadding)
     }

@@ -24,13 +24,13 @@
 		DA1000000000000000000003 /* ExchangeCalculatorHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA1000000000000000000004 /* ExchangeCalculatorHeaderView.swift */; };
 		DA1000000000000000000005 /* ExchangeCalculatorLoadedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA1000000000000000000006 /* ExchangeCalculatorLoadedView.swift */; };
 		DA1000000000000000000007 /* LoadingCalculatorSkeleton.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA1000000000000000000008 /* LoadingCalculatorSkeleton.swift */; };
-		DA1000000000000000000009 /* ExchangeCalculatorActions.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA100000000000000000000A /* ExchangeCalculatorActions.swift */; };
 		AD1111111111111111111111 /* RatesRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD1111111111111111111112 /* RatesRepository.swift */; };
 		AD2222222222222222222221 /* LiveRatesRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD2222222222222222222222 /* LiveRatesRepository.swift */; };
 		AD3333333333333333333331 /* RatesSnapshotCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD3333333333333333333332 /* RatesSnapshotCache.swift */; };
 		AD4444444444444444444441 /* CurrencyMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD4444444444444444444442 /* CurrencyMetadata.swift */; };
 		AD5555555555555555555551 /* RatesRepositoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD5555555555555555555552 /* RatesRepositoryTests.swift */; };
 		AD6666666666666666666661 /* InMemoryRatesSnapshotCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD6666666666666666666662 /* InMemoryRatesSnapshotCache.swift */; };
+		AD7777777777777777777771 /* CurrencyMetadataTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD7777777777777777777772 /* CurrencyMetadataTests.swift */; };
 		4DE8ABAEF119E2B31761A045 /* CurrencyCode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13304738E0FA45C38BD78939 /* CurrencyCode.swift */; };
 		528725B2B3DC4F2EAF59D80E /* CurrencyAmountField.swift in Sources */ = {isa = PBXBuildFile; fileRef = E380A47489C749F2B74C9C33 /* CurrencyAmountField.swift */; };
 		5809C8F8D5E44935806E486A /* ExchangeCalculatorState.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5F56970E2574313AE22AE87 /* ExchangeCalculatorState.swift */; };
@@ -88,13 +88,13 @@
 		DA1000000000000000000004 /* ExchangeCalculatorHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExchangeCalculatorHeaderView.swift; sourceTree = "<group>"; };
 		DA1000000000000000000006 /* ExchangeCalculatorLoadedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExchangeCalculatorLoadedView.swift; sourceTree = "<group>"; };
 		DA1000000000000000000008 /* LoadingCalculatorSkeleton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadingCalculatorSkeleton.swift; sourceTree = "<group>"; };
-		DA100000000000000000000A /* ExchangeCalculatorActions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExchangeCalculatorActions.swift; sourceTree = "<group>"; };
 		AD1111111111111111111112 /* RatesRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RatesRepository.swift; sourceTree = "<group>"; };
 		AD2222222222222222222222 /* LiveRatesRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveRatesRepository.swift; sourceTree = "<group>"; };
 		AD3333333333333333333332 /* RatesSnapshotCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RatesSnapshotCache.swift; sourceTree = "<group>"; };
 		AD4444444444444444444442 /* CurrencyMetadata.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurrencyMetadata.swift; sourceTree = "<group>"; };
 		AD5555555555555555555552 /* RatesRepositoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RatesRepositoryTests.swift; sourceTree = "<group>"; };
 		AD6666666666666666666662 /* InMemoryRatesSnapshotCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InMemoryRatesSnapshotCache.swift; sourceTree = "<group>"; };
+		AD7777777777777777777772 /* CurrencyMetadataTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurrencyMetadataTests.swift; sourceTree = "<group>"; };
 		B53AE3F1EC5B45179F4DD535 /* ExchangeCalculatorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExchangeCalculatorView.swift; sourceTree = "<group>"; };
 		BF7558A5FB4B6E0F71084E44 /* NetworkingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkingTests.swift; sourceTree = "<group>"; };
 		C31F8AA581204701B78A36BC /* CurrencyFlagView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurrencyFlagView.swift; sourceTree = "<group>"; };
@@ -124,7 +124,6 @@
 			isa = PBXGroup;
 			children = (
 				13304738E0FA45C38BD78939 /* CurrencyCode.swift */,
-				AD4444444444444444444442 /* CurrencyMetadata.swift */,
 				46976FB727B8B8A281AB398B /* ExchangeCalculator.swift */,
 				5C338DAE00F067F67990C944 /* ExchangeRate.swift */,
 				3A31367AD685B9B1710BF678 /* InputField.swift */,
@@ -292,6 +291,7 @@
 			isa = PBXGroup;
 			children = (
 				AC2222222222222222222228 /* Calculator */,
+				AD7777777777777777777773 /* Display */,
 			);
 			path = Presentation;
 			sourceTree = "<group>";
@@ -303,6 +303,14 @@
 				A8C8FB89906F47ADAE867FA8 /* ExchangeCalculatorViewModelTests.swift */,
 			);
 			path = Calculator;
+			sourceTree = "<group>";
+		};
+		AD7777777777777777777773 /* Display */ = {
+			isa = PBXGroup;
+			children = (
+				AD7777777777777777777772 /* CurrencyMetadataTests.swift */,
+			);
+			path = Display;
 			sourceTree = "<group>";
 		};
 		AC2222222222222222222227 /* Support */ = {
@@ -319,6 +327,8 @@
 			children = (
 				AC1111111111111111111114 /* Calculator */,
 				AC1111111111111111111115 /* Components */,
+				DA2000000000000000000001 /* Copy */,
+				DA2000000000000000000002 /* Display */,
 				AC1111111111111111111116 /* Styling */,
 			);
 			path = Presentation;
@@ -327,7 +337,6 @@
 		AC1111111111111111111114 /* Calculator */ = {
 			isa = PBXGroup;
 			children = (
-				DA100000000000000000000A /* ExchangeCalculatorActions.swift */,
 				C5F56970E2574313AE22AE87 /* ExchangeCalculatorState.swift */,
 				AB4444444444444444444444 /* ExchangeCalculatorStateReducer.swift */,
 				DA1000000000000000000002 /* ExchangeCalculatorErrorView.swift */,
@@ -350,14 +359,29 @@
 				);
 			path = Components;
 			sourceTree = "<group>";
-		};
-		AC1111111111111111111116 /* Styling */ = {
-			isa = PBXGroup;
-			children = (
-				D89E45B9F6B34D2EA0BA30E6 /* ExchangeCalculatorCopy.swift */,
-				FEF01454021A4F8EB8906091 /* ExchangeDesign.swift */,
-			);
-			path = Styling;
+			};
+			DA2000000000000000000001 /* Copy */ = {
+				isa = PBXGroup;
+				children = (
+					D89E45B9F6B34D2EA0BA30E6 /* ExchangeCalculatorCopy.swift */,
+				);
+				path = Copy;
+				sourceTree = "<group>";
+			};
+			DA2000000000000000000002 /* Display */ = {
+				isa = PBXGroup;
+				children = (
+					AD4444444444444444444442 /* CurrencyMetadata.swift */,
+				);
+				path = Display;
+				sourceTree = "<group>";
+			};
+			AC1111111111111111111116 /* Styling */ = {
+				isa = PBXGroup;
+				children = (
+					FEF01454021A4F8EB8906091 /* ExchangeDesign.swift */,
+				);
+				path = Styling;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -462,7 +486,6 @@
 				B94FE126C4AA483FAC5B5DA5 /* ExchangeCalculatorCopy.swift in Sources */,
 				AA4444444444444444444444 /* ExchangeCalculatorStateReducer.swift in Sources */,
 				5809C8F8D5E44935806E486A /* ExchangeCalculatorState.swift in Sources */,
-				DA1000000000000000000009 /* ExchangeCalculatorActions.swift in Sources */,
 				DA1000000000000000000001 /* ExchangeCalculatorErrorView.swift in Sources */,
 				DA1000000000000000000003 /* ExchangeCalculatorHeaderView.swift in Sources */,
 				DA1000000000000000000005 /* ExchangeCalculatorLoadedView.swift in Sources */,
@@ -491,6 +514,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				22889702A1A4EBD1FEA0B875 /* ExchangeCalculatorTests.swift in Sources */,
+				AD7777777777777777777771 /* CurrencyMetadataTests.swift in Sources */,
 				AA5555555555555555555555 /* ExchangeCalculatorStateReducerTests.swift in Sources */,
 				66882F33F4474F828483623D /* ExchangeCalculatorViewModelTests.swift in Sources */,
 				2EBC69566B0F32C30B49EFF6 /* FormatterTests.swift in Sources */,

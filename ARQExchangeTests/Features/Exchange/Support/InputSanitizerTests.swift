@@ -14,6 +14,15 @@ final class InputSanitizerTests: XCTestCase {
         XCTAssertEqual(InputSanitizer.sanitize("."), ".")
     }
 
+    func testKeepsDotAsDecimalSeparator() {
+        XCTAssertEqual(InputSanitizer.sanitize("123.45"), "123.45")
+    }
+
+    func testTreatsCommaAsGroupingNoiseNotDecimalSeparator() {
+        XCTAssertEqual(InputSanitizer.sanitize("123,45"), "12345")
+        XCTAssertEqual(DecimalParser.userInputDecimal(from: "123,45"), TestFixtures.decimal("12345"))
+    }
+
     func testHandlesEmptyInput() {
         XCTAssertEqual(InputSanitizer.sanitize(""), "")
     }

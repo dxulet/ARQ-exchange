@@ -6,9 +6,9 @@ private enum ExchangeCalculatorErrorMetrics {
 }
 
 @MainActor
-struct ExchangeCalculatorErrorView<ActionHandler: ExchangeCalculatorActionHandling>: View {
+struct ExchangeCalculatorErrorView: View {
     let message: String
-    let actionHandler: ActionHandler
+    let onRetry: () -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
@@ -16,7 +16,7 @@ struct ExchangeCalculatorErrorView<ActionHandler: ExchangeCalculatorActionHandli
                 .font(ExchangeDesign.Font.body)
                 .foregroundStyle(ExchangeDesign.Colors.contentPrimary)
 
-            Button(action: retryRatesLoad) {
+            Button(action: onRetry) {
                 Text(ExchangeCalculatorCopy.retryTitle)
                     .font(ExchangeDesign.Font.body)
                     .foregroundStyle(.white)
@@ -31,9 +31,5 @@ struct ExchangeCalculatorErrorView<ActionHandler: ExchangeCalculatorActionHandli
             .accessibilityLabel(ExchangeCalculatorCopy.retryAccessibilityLabel)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-    }
-
-    private func retryRatesLoad() {
-        actionHandler.retryRatesLoad()
     }
 }

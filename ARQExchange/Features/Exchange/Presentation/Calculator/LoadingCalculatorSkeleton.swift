@@ -34,7 +34,7 @@ private struct LoadingAmountRow: View {
 
             LoadingSkeletonCapsule(width: 96, height: 14)
         }
-        .frame(height: ExchangeDesign.Layout.rowHeight)
+        .frame(minHeight: ExchangeDesign.Layout.rowHeight)
         .padding(.horizontal, ExchangeDesign.Layout.rowHorizontalPadding)
         .background(
             ExchangeDesign.Colors.fieldBackground,
@@ -69,16 +69,8 @@ private struct LoadingAmountRow: View {
 
 private struct LoadingSwapButton: View {
     var body: some View {
-        Image(systemName: "arrow.down")
-            .font(ExchangeDesign.Font.swapIcon)
-            .foregroundStyle(.white.opacity(0.7))
-            .frame(width: ExchangeDesign.Layout.swapButtonSize, height: ExchangeDesign.Layout.swapButtonSize)
-            .background(ExchangeDesign.Colors.brand.opacity(0.35), in: Circle())
-            .overlay(
-                Circle()
-                    .stroke(ExchangeDesign.Colors.background, lineWidth: ExchangeDesign.Layout.swapButtonBorderWidth)
-            )
-            .accessibilityHidden(true)
+        SwapButtonLabel(iconOpacity: 0.7, backgroundOpacity: 0.35)
+        .accessibilityHidden(true)
     }
 }
 

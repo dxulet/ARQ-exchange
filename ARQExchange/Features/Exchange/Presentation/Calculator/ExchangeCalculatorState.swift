@@ -28,6 +28,7 @@ struct ExchangeCalculatorState: Equatable, Sendable {
     var bottomAmountText = ""
     var activeField: InputField?
     var isUsingStaleRates = false
+    var ratesFetchedAt: Date?
 
     var selectedCurrency: CurrencyCode {
         topCurrency == .usdc ? bottomCurrency : topCurrency

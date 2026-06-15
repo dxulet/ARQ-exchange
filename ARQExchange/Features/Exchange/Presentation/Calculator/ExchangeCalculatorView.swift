@@ -23,16 +23,10 @@ struct ExchangeFeatureDependencies: Sendable {
     let logger: ExchangeLogger
 }
 
-private struct CurrencyPickerPresentation: Identifiable, Equatable {
-    let options: [CurrencyPickerItem]
-
-    var id: String { "currency-picker" }
-}
-
 @MainActor
 struct ExchangeCalculatorView: View {
     @ObservedObject private var viewModel: ExchangeCalculatorViewModel
-    @State private var currencyPickerPresentation: CurrencyPickerPresentation?
+    @State private var isCurrencyPickerPresented = false
     @FocusState private var focusedAmountField: InputField?
 
     private enum Metrics {
@@ -71,7 +65,7 @@ struct ExchangeCalculatorView: View {
                     case .failed(let message):
                         ExchangeCalculatorErrorView(
                             message: message,
-                            actionHandler: self
+                            onRetry: retryRatesLoad
                         )
                     default:
                         calculator
@@ -83,17 +77,23 @@ struct ExchangeCalculatorView: View {
                 .padding(.bottom, Metrics.bottomPadding)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+
         }
         .task {
             _ = viewModel.loadIfNeeded()
         }
-        .sheet(item: $currencyPickerPresentation) { presentation in
+        .sheet(isPresented: $isCurrencyPickerPresented) {
+            let currencyPickerItems = viewModel.state.currencyPickerItems
+
             CurrencyPickerSheet(
-                options: presentation.options,
-                selectionHandler: self
+                options: currencyPickerItems,
+                onClose: dismissCurrencyPicker,
+                onSelectCurrency: selectCurrency
             )
             .presentationDetents([
-                .height(CurrencyPickerSheetLayout.preferredHeight(optionCount: presentation.options.count))
+                .height(
+                    CurrencyPickerSheetLayout.preferredHeight(optionCount: currencyPickerItems.count)
+                )
             ])
             .presentationDragIndicator(.visible)
             .presentationBackground(ExchangeDesign.Colors.background)
@@ -113,7 +113,8 @@ struct ExchangeCalculatorView: View {
                 topAmountText: amountBinding(for: .top),
                 bottomAmountText: amountBinding(for: .bottom),
                 focusedField: $focusedAmountField,
-                actionHandler: self
+                onSwapCurrencies: viewModel.swapCurrencies,
+                onPresentCurrencyPicker: presentCurrencyPicker
             )
         }
     }
@@ -125,26 +126,25 @@ struct ExchangeCalculatorView: View {
         )
     }
 
-    func presentCurrencyPicker() {
-        guard currencyPickerPresentation == nil else {
+    private func retryRatesLoad() {
+        viewModel.retry()
+    }
+
+    private func presentCurrencyPicker() {
+        guard !isCurrencyPickerPresented else {
             return
         }
 
         focusedAmountField = nil
-        currencyPickerPresentation = CurrencyPickerPresentation(options: viewModel.state.currencyPickerItems)
-    }
-}
-
-extension ExchangeCalculatorView: ExchangeCalculatorActionHandling {
-    func retryRatesLoad() {
-        viewModel.retry()
+        isCurrencyPickerPresented = true
     }
 
-    func swapCurrencies() {
-        viewModel.swapCurrencies()
+    private func dismissCurrencyPicker() {
+        isCurrencyPickerPresented = false
     }
 
-    func selectCurrency(_ currency: CurrencyCode) {
+    private func selectCurrency(_ currency: CurrencyCode) {
         viewModel.selectCurrency(currency)
+        dismissCurrencyPicker()
     }
 }

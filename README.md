@@ -31,10 +31,10 @@ Native SwiftUI exchange calculator built as a small production product surface, 
 
 The exchange feature is split into small layers that can grow without forcing SwiftUI views to own product logic:
 
-- `Domain`: currency codes, exchange rates, quote side, calculator rules, and currency metadata.
+- `Domain`: currency codes, exchange rates, quote side, and calculator rules.
 - `Data`: API client, endpoint definitions, live service, disk snapshot cache, and live repository.
 - `Application`: repository contracts, exchange snapshots, and exchange log events.
-- `Presentation`: SwiftUI view, ViewModel, state reducer, components, and styling.
+- `Presentation`: SwiftUI view, ViewModel, state reducer, components, display metadata, copy, and styling.
 - `Support`: input sanitizing and display formatting.
 
 The `ExchangeCalculatorViewModel` depends on `RatesRepository`, not a concrete network service. The repository owns timeout fallback and stale-cache recovery, keeping UI state transitions deterministic and rate-loading behavior testable without live network calls.
@@ -44,7 +44,7 @@ The `ExchangeCalculatorViewModel` depends on `RatesRepository`, not a concrete n
 ## Production Readiness
 
 - Disk cache stores the last successful rates snapshot in `Caches/exchange-rates-snapshot.json`.
-- Cached rates are used only as a failure fallback after a network refresh fails.
+- Cached rates are used only as a failure fallback after a network refresh fails, and only for snapshots fetched within 15 minutes.
 - Network timeouts are configured at the `URLSession` level.
 - Currency discovery has a bounded fallback delay so the app does not block indefinitely on a non-critical endpoint.
 - Load outcomes, discovery fallbacks, stale-cache fallback, cache failures, and skipped malformed ticker rows are emitted through one `ExchangeLogger` boundary with an `OSLog` implementation.

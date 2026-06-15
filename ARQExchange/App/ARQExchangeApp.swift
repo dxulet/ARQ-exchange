@@ -18,7 +18,7 @@ private struct AppDependencies {
     static let live: AppDependencies = {
         let logger = ExchangeLogger.osLog()
         let ratesService = LiveRatesService(
-            client: APIClient(),
+            client: APIClient(configuration: APIConfiguration.production),
             logger: logger
         )
         let cache = DiskRatesSnapshotCache(logger: logger)

@@ -1,9 +1,12 @@
 import Foundation
 
 struct LiveRatesRepository: RatesRepository {
+    static let defaultStaleCacheMaxAge: TimeInterval = 15 * 60
+
     private let ratesService: RatesService
     private let cache: RatesSnapshotCaching
     private let logger: ExchangeLogger
+    private let staleCacheMaxAge: TimeInterval
     private let fallbackDelayNanoseconds: UInt64
     private let now: @Sendable () -> Date
 
@@ -11,12 +14,14 @@ struct LiveRatesRepository: RatesRepository {
         ratesService: RatesService,
         cache: RatesSnapshotCaching = DiskRatesSnapshotCache(),
         logger: ExchangeLogger = .disabled,
+        staleCacheMaxAge: TimeInterval = LiveRatesRepository.defaultStaleCacheMaxAge,
         fallbackDelayNanoseconds: UInt64 = 750_000_000,
         now: @escaping @Sendable () -> Date = { Date() }
     ) {
         self.ratesService = ratesService
         self.cache = cache
         self.logger = logger
+        self.staleCacheMaxAge = staleCacheMaxAge
         self.fallbackDelayNanoseconds = fallbackDelayNanoseconds
         self.now = now
     }
@@ -29,8 +34,7 @@ struct LiveRatesRepository: RatesRepository {
         } catch is CancellationError {
             throw CancellationError()
         } catch {
-            if let cachedSnapshot = await cache.snapshot() {
-                logger.log(.staleCacheServed)
+            if let cachedSnapshot = await freshCachedSnapshot() {
                 return RatesRepositoryResult(snapshot: cachedSnapshot, source: .staleCache)
             }
 
@@ -84,5 +88,20 @@ struct LiveRatesRepository: RatesRepository {
         }
 
         logger.log(.currencyDiscoveryFallback(source: discovery.source))
+    }
+
+    private func freshCachedSnapshot() async -> ExchangeRatesSnapshot? {
+        guard let cachedSnapshot = await cache.snapshot() else {
+            return nil
+        }
+
+        let cacheAge = now().timeIntervalSince(cachedSnapshot.fetchedAt)
+        guard cacheAge <= staleCacheMaxAge else {
+            logger.log(.staleCacheExpired)
+            return nil
+        }
+
+        logger.log(.staleCacheServed)
+        return cachedSnapshot
     }
 }

@@ -1,12 +1,13 @@
 import SwiftUI
 
 @MainActor
-struct ExchangeCalculatorLoadedView<ActionHandler: ExchangeCalculatorActionHandling>: View {
+struct ExchangeCalculatorLoadedView: View {
     let state: ExchangeCalculatorState
     let topAmountText: Binding<String>
     let bottomAmountText: Binding<String>
     let focusedField: FocusState<InputField?>.Binding
-    let actionHandler: ActionHandler
+    let onSwapCurrencies: () -> Void
+    let onPresentCurrencyPicker: () -> Void
 
     var body: some View {
         ZStack {
@@ -15,7 +16,7 @@ struct ExchangeCalculatorLoadedView<ActionHandler: ExchangeCalculatorActionHandl
                 amountField(for: .bottom, amountText: bottomAmountText)
             }
 
-            Button(action: swapCurrencies) {
+            Button(action: onSwapCurrencies) {
                 SwapButtonLabel()
             }
             .buttonStyle(.plain)
@@ -34,11 +35,7 @@ struct ExchangeCalculatorLoadedView<ActionHandler: ExchangeCalculatorActionHandl
             isCurrencySelectable: !currency.isUSDc,
             hasRate: state.currentRate != nil,
             focusedField: focusedField,
-            currencyPickerPresenter: actionHandler
+            onSelectCurrency: onPresentCurrencyPicker
         )
-    }
-
-    private func swapCurrencies() {
-        actionHandler.swapCurrencies()
     }
 }
