@@ -17,6 +17,7 @@ enum ExchangeDesign {
         static let rowHorizontalPadding: CGFloat = 16
         static let rowSpacing: CGFloat = 16
         static let swapButtonSize: CGFloat = 24
+        static let swapIconSize: CGFloat = 14
         static let swapButtonBorderWidth: CGFloat = 6
         static let flagSize: CGFloat = 16
         static let currencyLabelSpacing: CGFloat = 8
@@ -29,7 +30,6 @@ enum ExchangeDesign {
         static let body = SwiftUI.Font.system(size: 16, weight: .semibold)
         static let sheetTitle = SwiftUI.Font.system(size: 24, weight: .semibold)
         static let chevron = SwiftUI.Font.system(size: 13, weight: .bold)
-        static let swapIcon = SwiftUI.Font.system(size: 14, weight: .bold)
         static let closeIcon = SwiftUI.Font.system(size: 20, weight: .regular)
         static let checkmark = SwiftUI.Font.system(size: 11, weight: .bold)
     }

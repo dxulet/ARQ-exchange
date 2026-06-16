@@ -7,7 +7,7 @@ final class CurrencyMetadataTests: XCTestCase {
 
         XCTAssertEqual(metadata.code, .mxn)
         XCTAssertEqual(metadata.displayName, "Mexican Peso")
-        XCTAssertEqual(metadata.flagAssetName, "mx_flag")
+        XCTAssertEqual(metadata.flag, .mxFlag)
     }
 
     func testUnknownCurrencyMetadataFallsBackToCurrencyCode() {
@@ -17,6 +17,6 @@ final class CurrencyMetadataTests: XCTestCase {
 
         XCTAssertEqual(metadata.code, currency)
         XCTAssertEqual(metadata.displayName, "CLP")
-        XCTAssertNil(metadata.flagAssetName)
+        XCTAssertNil(metadata.flag)
     }
 }

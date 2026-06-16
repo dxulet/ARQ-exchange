@@ -6,8 +6,8 @@ struct CurrencyFlagView: View {
 
     var body: some View {
         Group {
-            if let flagAssetName = metadata.flagAssetName {
-                Image(flagAssetName)
+            if let flag = metadata.flag {
+                Image(flag)
                     .resizable()
                     .scaledToFill()
             } else {

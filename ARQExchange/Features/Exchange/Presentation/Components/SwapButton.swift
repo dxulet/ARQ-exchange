@@ -5,8 +5,11 @@ struct SwapButtonLabel: View {
     var backgroundOpacity: CGFloat = 1
 
     var body: some View {
-        Image(systemName: "arrow.down")
-            .font(ExchangeDesign.Font.swapIcon)
+        Image(.arrowDown)
+            .renderingMode(.template)
+            .resizable()
+            .scaledToFit()
+            .frame(width: ExchangeDesign.Layout.swapIconSize, height: ExchangeDesign.Layout.swapIconSize)
             .foregroundStyle(.white.opacity(iconOpacity))
             .frame(width: ExchangeDesign.Layout.swapButtonSize, height: ExchangeDesign.Layout.swapButtonSize)
             .background(ExchangeDesign.Colors.brand.opacity(backgroundOpacity), in: Circle())
