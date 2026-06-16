@@ -18,11 +18,8 @@ struct APIClient: APIClientSending {
 
     private static func makeDefaultURLSession() -> URLSession {
         let configuration = URLSessionConfiguration.default
-        configuration.requestCachePolicy = .useProtocolCachePolicy
-        configuration.urlCache = URLCache(
-            memoryCapacity: 20 * 1024 * 1024,
-            diskCapacity: 100 * 1024 * 1024
-        )
+        configuration.requestCachePolicy = .reloadIgnoringLocalCacheData
+        configuration.urlCache = nil
         configuration.timeoutIntervalForRequest = 10
         configuration.timeoutIntervalForResource = 30
         return URLSession(configuration: configuration)
