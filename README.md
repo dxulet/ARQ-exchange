@@ -27,6 +27,15 @@ Native SwiftUI exchange calculator built as a small production product surface, 
 - Preserves the USDc amount on swap where possible.
 - Shows an error with retry when rates fail to load.
 
+## Assumptions
+
+- The Figma values are treated as sample content, so the calculator starts with empty input fields and calculates after user input.
+- The Figma reference includes EURc, but the provided API contract lists MXN, ARS, BRL, and COP. I used the API contract as the source of truth and excluded unsupported currencies from the picker.
+- The currencies endpoint is not available yet, so the app falls back to MXN, ARS, BRL, and COP.
+- Row order determines quote side: USDc on top uses bid, local currency on top uses ask.
+- I used Decimal for all exchange calculations to avoid floating-point precision issues.
+- The visible rate label follows the Figma format while the displayed value is quote-side aware.
+
 ## Architecture
 
 The exchange feature is split into small layers that can grow without forcing SwiftUI views to own product logic:
@@ -46,7 +55,7 @@ The `ExchangeCalculatorViewModel` depends on `RatesRepository`, not a concrete n
 - Network timeouts are configured at the `URLSession` level.
 - Currency discovery has a bounded fallback delay so the app does not block indefinitely on a non-critical endpoint.
 - Load outcomes, discovery fallbacks, and skipped malformed ticker rows are emitted through one `ExchangeLogger` boundary with an `OSLog` implementation.
-- The currency picker uses SwiftUI sheet presentation and handles unknown API currency codes without hard-crashing the UI.
+- The UI can render unknown discovered currency codes safely, while currencies without usable rates are not selectable.
 
 ## Run
 
