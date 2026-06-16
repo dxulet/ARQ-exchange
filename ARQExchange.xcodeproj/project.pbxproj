@@ -40,7 +40,7 @@
 		6A88DE4528424129B3E86423 /* CurrencyFlagView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C31F8AA581204701B78A36BC /* CurrencyFlagView.swift */; };
 		71D9468B12614948AAFAACBC /* NetworkingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF7558A5FB4B6E0F71084E44 /* NetworkingTests.swift */; };
 		771688B8DF97D3B075238A07 /* ExchangeRate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C338DAE00F067F67990C944 /* ExchangeRate.swift */; };
-		7A6056B223604B7C8B39E4D3 /* TickerResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = E25E0B539AD24FC4BE40A937 /* TickerResponse.swift */; };
+		7A6056B223604B7C8B39E4D3 /* TickerDTO.swift in Sources */ = {isa = PBXBuildFile; fileRef = E25E0B539AD24FC4BE40A937 /* TickerDTO.swift */; };
 		9013C5EDC101FDDF7FE19515 /* AmountFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C35B065AAB1746A5E1698F3 /* AmountFormatter.swift */; };
 		9442B53AA24B8264EAB3D755 /* QuoteSide.swift in Sources */ = {isa = PBXBuildFile; fileRef = E172024711C7EFC18BD5D368 /* QuoteSide.swift */; };
 		9875414B1F6623A871A57292 /* InputField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A31367AD685B9B1710BF678 /* InputField.swift */; };
@@ -109,7 +109,7 @@
 		E12F8A05EA264AE0A11AF8B8 /* APIEndpoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIEndpoint.swift; sourceTree = "<group>"; };
 		E172024711C7EFC18BD5D368 /* QuoteSide.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuoteSide.swift; sourceTree = "<group>"; };
 		E380A47489C749F2B74C9C33 /* CurrencyAmountField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurrencyAmountField.swift; sourceTree = "<group>"; };
-		E25E0B539AD24FC4BE40A937 /* TickerResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TickerResponse.swift; sourceTree = "<group>"; };
+		E25E0B539AD24FC4BE40A937 /* TickerDTO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TickerDTO.swift; sourceTree = "<group>"; };
 		E8840416111C8B2C46DEB3DD /* ARQExchangeTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = ARQExchangeTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		EC56E3E4F3E04417B10805F3 /* SwapButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapButton.swift; sourceTree = "<group>"; };
 		F0A8107F8BDB69D988038920 /* ARQExchangeApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ARQExchangeApp.swift; sourceTree = "<group>"; };
@@ -158,7 +158,7 @@
 				A46430B506B84CB6904556E9 /* APIError.swift */,
 				E12F8A05EA264AE0A11AF8B8 /* APIEndpoint.swift */,
 				A0A21D4834FA4EC2B86E7157 /* APIClient.swift */,
-				E25E0B539AD24FC4BE40A937 /* TickerResponse.swift */,
+				E25E0B539AD24FC4BE40A937 /* TickerDTO.swift */,
 				F0E6650A50DA444D8B2554B9 /* RatesService.swift */,
 				C4C40A9D540B4C1C970F0C1D /* LiveRatesService.swift */,
 				AD2222222222222222222222 /* LiveRatesRepository.swift */,
@@ -508,7 +508,7 @@
 				CBF32A0C71DF44459A5E6A30 /* RatesService.swift in Sources */,
 				BC910385960244708C2099BA /* SwapButton.swift in Sources */,
 				DA1000000000000000000007 /* LoadingCalculatorSkeleton.swift in Sources */,
-				7A6056B223604B7C8B39E4D3 /* TickerResponse.swift in Sources */,
+				7A6056B223604B7C8B39E4D3 /* TickerDTO.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

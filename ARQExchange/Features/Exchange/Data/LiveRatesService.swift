@@ -41,16 +41,16 @@ struct LiveRatesService: RatesService {
             return []
         }
 
-        let tickerResponses = try await client.send(.tickers(currencies: requestedCurrencies), as: [TickerResponse].self)
+        let tickerDTOs = try await client.send(.tickers(currencies: requestedCurrencies), as: [TickerDTO].self)
         var rates: [ExchangeRate] = []
 
-        for response in tickerResponses {
+        for tickerDTO in tickerDTOs {
             do {
-                rates.append(try tickerMapper.makeExchangeRate(from: response))
+                rates.append(try tickerMapper.makeExchangeRate(from: tickerDTO))
             } catch {
                 logger.log(
                     .tickerMappingSkipped(
-                        book: response.currencyPairCode,
+                        book: tickerDTO.currencyPairCode,
                         reason: String(describing: error)
                     )
                 )

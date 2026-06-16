@@ -32,7 +32,7 @@ enum TestFixtures {
         timestamp: timestamp
     )
 
-    static let apiMXNTicker = TickerResponse(
+    static let apiMXNTicker = TickerDTO(
         ask: "17.4418000000",
         bid: "17.4382000000",
         currencyPairCode: "usdc_mxn",

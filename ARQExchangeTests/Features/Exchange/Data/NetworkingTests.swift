@@ -25,7 +25,7 @@ final class NetworkingTests: XCTestCase {
         )
     }
 
-    func testTickerResponseDecodesIntoExchangeRate() throws {
+    func testTickerDTODecodesIntoExchangeRate() throws {
         let json = TestFixtures.data("""
         {
           "ask": "17.4418000000",
@@ -35,8 +35,8 @@ final class NetworkingTests: XCTestCase {
         }
         """)
 
-        let tickerResponse = try JSONDecoder().decode(TickerResponse.self, from: json)
-        let rate = try TickerMapper().makeExchangeRate(from: tickerResponse)
+        let tickerDTO = try JSONDecoder().decode(TickerDTO.self, from: json)
+        let rate = try TickerMapper().makeExchangeRate(from: tickerDTO)
 
         XCTAssertEqual(rate.base, .usdc)
         XCTAssertEqual(rate.quote, .mxn)
@@ -45,37 +45,37 @@ final class NetworkingTests: XCTestCase {
         XCTAssertEqual(rate.timestamp, TestFixtures.timestamp)
     }
 
-    func testTickerResponseRejectsUnsupportedBook() throws {
-        let tickerResponse = TickerResponse(
+    func testTickerDTORejectsUnsupportedBook() throws {
+        let tickerDTO = TickerDTO(
             ask: "17.4418000000",
             bid: "17.4382000000",
             currencyPairCode: "mxn_usdc",
             timestamp: TestFixtures.timestamp
         )
 
-        XCTAssertThrowsError(try TickerMapper().makeExchangeRate(from: tickerResponse))
+        XCTAssertThrowsError(try TickerMapper().makeExchangeRate(from: tickerDTO))
     }
 
-    func testTickerResponseRejectsBookWithEmptyComponent() throws {
-        let tickerResponse = TickerResponse(
+    func testTickerDTORejectsBookWithEmptyComponent() throws {
+        let tickerDTO = TickerDTO(
             ask: "17.4418000000",
             bid: "17.4382000000",
             currencyPairCode: "usdc__mxn",
             timestamp: TestFixtures.timestamp
         )
 
-        XCTAssertThrowsError(try TickerMapper().makeExchangeRate(from: tickerResponse))
+        XCTAssertThrowsError(try TickerMapper().makeExchangeRate(from: tickerDTO))
     }
 
-    func testTickerResponseRejectsNonPositiveRates() {
-        let tickerResponse = TickerResponse(
+    func testTickerDTORejectsNonPositiveRates() {
+        let tickerDTO = TickerDTO(
             ask: "0",
             bid: "-17.4382000000",
             currencyPairCode: "usdc_mxn",
             timestamp: TestFixtures.timestamp
         )
 
-        XCTAssertThrowsError(try TickerMapper().makeExchangeRate(from: tickerResponse)) { error in
+        XCTAssertThrowsError(try TickerMapper().makeExchangeRate(from: tickerDTO)) { error in
             XCTAssertEqual(
                 error as? TickerMappingError,
                 .nonPositiveDecimal(field: "ask", value: "0")
@@ -149,8 +149,8 @@ final class NetworkingTests: XCTestCase {
         XCTAssertEqual(client.requestedEndpoints, [.tickers(currencies: [.mxn])])
     }
 
-    func testLiveRatesServiceSkipsInvalidTickerResponses() async throws {
-        let invalidTicker = TickerResponse(
+    func testLiveRatesServiceSkipsInvalidTickerDTOs() async throws {
+        let invalidTicker = TickerDTO(
             ask: "not-a-decimal",
             bid: "17.4382000000",
             currencyPairCode: "usdc_ars",
@@ -175,7 +175,7 @@ final class NetworkingTests: XCTestCase {
     }
 
     func testLiveRatesServiceThrowsWhenNoUsableRatesAreReturned() async {
-        let invalidTicker = TickerResponse(
+        let invalidTicker = TickerDTO(
             ask: "not-a-decimal",
             bid: "17.4382000000",
             currencyPairCode: "usdc_mxn",
@@ -347,12 +347,12 @@ private final class URLProtocolStub: URLProtocol, @unchecked Sendable {
 
 private final class MockAPIClient: APIClientSending, @unchecked Sendable {
     private let tickerCurrenciesResult: Result<[String], Error>
-    private let tickersResult: Result<[TickerResponse], Error>
+    private let tickersResult: Result<[TickerDTO], Error>
     private(set) var requestedEndpoints: [APIEndpoint] = []
 
     init(
         tickerCurrenciesResult: Result<[String], Error> = .success([]),
-        tickersResult: Result<[TickerResponse], Error> = .success([])
+        tickersResult: Result<[TickerDTO], Error> = .success([])
     ) {
         self.tickerCurrenciesResult = tickerCurrenciesResult
         self.tickersResult = tickersResult

@@ -1,6 +1,6 @@
 import Foundation
 
-struct TickerResponse: Decodable, Equatable, Sendable {
+struct TickerDTO: Decodable, Equatable, Sendable {
     let ask: String
     let bid: String
     let currencyPairCode: String
@@ -24,12 +24,12 @@ enum TickerMappingError: Error, Equatable, Sendable {
 struct TickerMapper: Sendable {
     // MARK: - Public
 
-    func makeExchangeRate(from response: TickerResponse) throws -> ExchangeRate {
-        let currencies = try currencyPair(from: response.currencyPairCode)
-        let decimalRates = try decimalRates(from: response)
+    func makeExchangeRate(from tickerDTO: TickerDTO) throws -> ExchangeRate {
+        let currencies = try currencyPair(from: tickerDTO.currencyPairCode)
+        let decimalRates = try decimalRates(from: tickerDTO)
 
         guard currencies.base.isUSDc, !currencies.quote.isUSDc else {
-            throw TickerMappingError.unsupportedPair(response.currencyPairCode)
+            throw TickerMappingError.unsupportedPair(tickerDTO.currencyPairCode)
         }
 
         return ExchangeRate(
@@ -37,7 +37,7 @@ struct TickerMapper: Sendable {
             quote: currencies.quote,
             bid: decimalRates.bid,
             ask: decimalRates.ask,
-            timestamp: response.timestamp
+            timestamp: tickerDTO.timestamp
         )
     }
 
@@ -56,9 +56,9 @@ struct TickerMapper: Sendable {
         )
     }
 
-    private func decimalRates(from response: TickerResponse) throws -> (bid: Decimal, ask: Decimal) {
-        let askRate = try positiveDecimal(from: response.ask, field: "ask")
-        let bidRate = try positiveDecimal(from: response.bid, field: "bid")
+    private func decimalRates(from tickerDTO: TickerDTO) throws -> (bid: Decimal, ask: Decimal) {
+        let askRate = try positiveDecimal(from: tickerDTO.ask, field: "ask")
+        let bidRate = try positiveDecimal(from: tickerDTO.bid, field: "bid")
 
         return (bid: bidRate, ask: askRate)
     }
