@@ -50,27 +50,6 @@ final class ExchangeCalculatorViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.state.selectedCurrency, .mxn)
     }
 
-    func testStaleRepositoryResultMarksStateAndDisplaysNormalTicker() async {
-        let fetchedAt = Date(timeIntervalSince1970: 1_780_000_000)
-        let viewModel = makeViewModel(
-            result: .success(
-                .loadedSnapshot(
-                    availableCurrencies: [.mxn],
-                    ratesByCurrency: [.mxn: TestFixtures.mxnRate],
-                    source: .staleCache,
-                    fetchedAt: fetchedAt
-                )
-            )
-        )
-
-        await viewModel.load().value
-
-        XCTAssertEqual(viewModel.state.loadState, .loaded)
-        XCTAssertTrue(viewModel.state.isUsingStaleRates)
-        XCTAssertEqual(viewModel.state.ratesFetchedAt, fetchedAt)
-        XCTAssertEqual(viewModel.rateText, "1 USDc = 18.4097 MXN")
-    }
-
     func testEnteringTopUSDcCalculatesBottomLocalAmount() async {
         let viewModel = await loadedViewModel()
 
@@ -131,11 +110,11 @@ final class ExchangeCalculatorViewModelTests: XCTestCase {
         return viewModel
     }
 
-    private func makeViewModel(result: Result<RatesRepositoryResult, Error>) -> ExchangeCalculatorViewModel {
+    private func makeViewModel(result: Result<ExchangeRatesSnapshot, Error>) -> ExchangeCalculatorViewModel {
         makeViewModel(results: [result])
     }
 
-    private func makeViewModel(results: [Result<RatesRepositoryResult, Error>]) -> ExchangeCalculatorViewModel {
+    private func makeViewModel(results: [Result<ExchangeRatesSnapshot, Error>]) -> ExchangeCalculatorViewModel {
         ExchangeCalculatorViewModel(
             ratesRepository: MockRatesRepository(results: results)
         )
@@ -147,13 +126,13 @@ private enum TestError: Error, Sendable {
 }
 
 private actor MockRatesRepository: RatesRepository {
-    private var results: [Result<RatesRepositoryResult, Error>]
+    private var results: [Result<ExchangeRatesSnapshot, Error>]
 
-    init(results: [Result<RatesRepositoryResult, Error>]) {
+    init(results: [Result<ExchangeRatesSnapshot, Error>]) {
         self.results = results
     }
 
-    func loadRatesSnapshot() async throws -> RatesRepositoryResult {
+    func loadRatesSnapshot() async throws -> ExchangeRatesSnapshot {
         guard !results.isEmpty else {
             throw TestError.expected
         }
@@ -162,25 +141,19 @@ private actor MockRatesRepository: RatesRepository {
     }
 }
 
-private extension RatesRepositoryResult {
+private extension ExchangeRatesSnapshot {
     static func loadedSnapshot(
         availableCurrencies: [CurrencyCode] = [.mxn, .cop],
         ratesByCurrency: [CurrencyCode: ExchangeRate] = [
             .mxn: TestFixtures.mxnRate,
             .cop: TestFixtures.copRate
         ],
-        source: RatesSnapshotSource = .network,
-        fetchedAt: Date = Date(timeIntervalSince1970: 0),
         currencyDiscoverySource: CurrencyDiscoverySource = .remote
-    ) -> RatesRepositoryResult {
-        RatesRepositoryResult(
-            snapshot: ExchangeRatesSnapshot(
-                availableCurrencies: availableCurrencies,
-                ratesByCurrency: ratesByCurrency,
-                fetchedAt: fetchedAt,
-                currencyDiscoverySource: currencyDiscoverySource
-            ),
-            source: source
+    ) -> ExchangeRatesSnapshot {
+        ExchangeRatesSnapshot(
+            availableCurrencies: availableCurrencies,
+            ratesByCurrency: ratesByCurrency,
+            currencyDiscoverySource: currencyDiscoverySource
         )
     }
 }

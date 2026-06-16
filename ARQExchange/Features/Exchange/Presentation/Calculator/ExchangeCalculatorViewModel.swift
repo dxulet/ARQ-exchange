@@ -37,7 +37,7 @@ final class ExchangeCalculatorViewModel: ObservableObject {
         state.availableCurrencies.map { currency in
             CurrencyPickerItem(
                 currency: currency,
-                metadata: CurrencyMetadataCatalog.metadata(for: currency),
+                flag: CurrencyFlagCatalog.flag(for: currency),
                 isSelected: currency == state.selectedCurrency,
                 isSelectable: state.hasRate(for: currency)
             )
@@ -74,17 +74,16 @@ final class ExchangeCalculatorViewModel: ObservableObject {
             }
 
             do {
-                let result = try await ratesRepository.loadRatesSnapshot()
+                let snapshot = try await ratesRepository.loadRatesSnapshot()
                 try Task.checkCancellation()
                 guard isCurrentLoad(requestID) else {
                     return
                 }
 
-                applyLoadedSnapshot(result)
+                applyLoadedSnapshot(snapshot)
                 logger.log(
                     .ratesLoadSucceeded(
-                        source: result.source,
-                        currencyDiscoverySource: result.snapshot.currencyDiscoverySource
+                        currencyDiscoverySource: snapshot.currencyDiscoverySource
                     )
                 )
             } catch is CancellationError {
@@ -126,12 +125,11 @@ final class ExchangeCalculatorViewModel: ObservableObject {
 
     // MARK: - State Updates
 
-    private func applyLoadedSnapshot(_ result: RatesRepositoryResult) {
+    private func applyLoadedSnapshot(_ snapshot: ExchangeRatesSnapshot) {
         setState(
             stateReducer.loadedState(
-                from: result.snapshot,
-                previousState: state,
-                ratesSource: result.source
+                from: snapshot,
+                previousState: state
             )
         )
     }

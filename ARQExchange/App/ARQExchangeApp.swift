@@ -21,12 +21,10 @@ private struct AppDependencies {
             client: APIClient(configuration: APIConfiguration.production),
             logger: logger
         )
-        let cache = DiskRatesSnapshotCache(logger: logger)
 
         return AppDependencies(
             ratesRepository: LiveRatesRepository(
                 ratesService: ratesService,
-                cache: cache,
                 logger: logger
             ),
             logger: logger

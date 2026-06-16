@@ -26,8 +26,8 @@ private struct LoadingAmountRow: View {
     let currency: CurrencyCode
     let showsChevron: Bool
 
-    private var metadata: CurrencyMetadata {
-        CurrencyMetadataCatalog.metadata(for: currency)
+    private var flag: ImageResource? {
+        CurrencyFlagCatalog.flag(for: currency)
     }
 
     var body: some View {
@@ -52,7 +52,11 @@ private struct LoadingAmountRow: View {
 
     private var currencyLabel: some View {
         HStack(spacing: ExchangeDesign.Layout.currencyLabelSpacing) {
-            CurrencyFlagView(metadata: metadata, size: ExchangeDesign.Layout.flagSize)
+            CurrencyFlagView(
+                currency: currency,
+                flag: flag,
+                size: ExchangeDesign.Layout.flagSize
+            )
                 .opacity(0.45)
 
             Text(currency.rawValue)

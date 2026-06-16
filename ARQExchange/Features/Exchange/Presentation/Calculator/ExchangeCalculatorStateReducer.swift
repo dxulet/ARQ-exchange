@@ -9,8 +9,7 @@ struct ExchangeCalculatorStateReducer: Sendable {
 
     func loadedState(
         from snapshot: ExchangeRatesSnapshot,
-        previousState: ExchangeCalculatorState,
-        ratesSource: RatesSnapshotSource
+        previousState: ExchangeCalculatorState
     ) -> ExchangeCalculatorState {
         var loadedState = ExchangeCalculatorState(
             loadState: .loaded,
@@ -20,9 +19,7 @@ struct ExchangeCalculatorStateReducer: Sendable {
             bottomCurrency: snapshot.selectedCurrency,
             topAmountText: previousState.topAmountText,
             bottomAmountText: previousState.bottomAmountText,
-            activeField: previousState.activeField,
-            isUsingStaleRates: ratesSource == .staleCache,
-            ratesFetchedAt: snapshot.fetchedAt
+            activeField: previousState.activeField
         )
         updateConvertedAmount(in: &loadedState)
         return loadedState

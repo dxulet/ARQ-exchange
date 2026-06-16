@@ -137,7 +137,11 @@ private struct CurrencyPickerRow: View {
     var body: some View {
         Button(action: selectCurrency) {
             HStack(spacing: CurrencyPickerMetrics.rowSpacing) {
-                CurrencyFlagView(metadata: option.metadata, size: CurrencyPickerMetrics.flagSize)
+                CurrencyFlagView(
+                    currency: option.currency,
+                    flag: option.flag,
+                    size: CurrencyPickerMetrics.flagSize
+                )
                     .frame(
                         width: CurrencyPickerMetrics.flagContainerSize,
                         height: CurrencyPickerMetrics.flagContainerSize

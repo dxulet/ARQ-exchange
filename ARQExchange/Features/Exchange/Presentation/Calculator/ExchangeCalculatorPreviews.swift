@@ -130,8 +130,6 @@ private struct LoadedViewPreview: View {
 // MARK: - ExchangeCalculatorPreviewData
 
 private enum ExchangeCalculatorPreviewData {
-    static let fetchedAt = Date(timeIntervalSince1970: 1_780_000_000)
-
     static let mxnRate = ExchangeRate(
         base: .usdc,
         quote: .mxn,
@@ -165,7 +163,7 @@ private enum ExchangeCalculatorPreviewData {
     static let pickerItems: [CurrencyPickerItem] = CurrencyCode.localCurrencies.map { currency in
         CurrencyPickerItem(
             currency: currency,
-            metadata: CurrencyMetadataCatalog.metadata(for: currency),
+            flag: CurrencyFlagCatalog.flag(for: currency),
             isSelected: currency == .mxn,
             isSelectable: ratesByCurrency[currency] != nil
         )
@@ -187,9 +185,7 @@ private enum ExchangeCalculatorPreviewData {
             bottomCurrency: bottomCurrency,
             topAmountText: topAmountText,
             bottomAmountText: bottomAmountText,
-            activeField: activeField,
-            isUsingStaleRates: false,
-            ratesFetchedAt: fetchedAt
+            activeField: activeField
         )
     }
 
@@ -253,14 +249,10 @@ private extension ExchangeCalculatorState {
 // MARK: - PreviewRatesRepository
 
 private actor PreviewRatesRepository: RatesRepository {
-    func loadRatesSnapshot() async throws -> RatesRepositoryResult {
-        RatesRepositoryResult(
-            snapshot: ExchangeRatesSnapshot(
-                availableCurrencies: CurrencyCode.localCurrencies,
-                ratesByCurrency: ExchangeCalculatorPreviewData.ratesByCurrency,
-                fetchedAt: ExchangeCalculatorPreviewData.fetchedAt
-            ),
-            source: .network
+    func loadRatesSnapshot() async throws -> ExchangeRatesSnapshot {
+        ExchangeRatesSnapshot(
+            availableCurrencies: CurrencyCode.localCurrencies,
+            ratesByCurrency: ExchangeCalculatorPreviewData.ratesByCurrency
         )
     }
 }

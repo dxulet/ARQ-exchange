@@ -13,8 +13,8 @@ struct CurrencyAmountField: View {
     let focusedField: FocusState<InputField?>.Binding
     let onSelectCurrency: () -> Void
 
-    private var metadata: CurrencyMetadata {
-        CurrencyMetadataCatalog.metadata(for: currency)
+    private var flag: ImageResource? {
+        CurrencyFlagCatalog.flag(for: currency)
     }
 
     var body: some View {
@@ -54,7 +54,11 @@ struct CurrencyAmountField: View {
 
     private var currencyLabel: some View {
         HStack(spacing: ExchangeDesign.Layout.currencyLabelSpacing) {
-            CurrencyFlagView(metadata: metadata, size: ExchangeDesign.Layout.flagSize)
+            CurrencyFlagView(
+                currency: currency,
+                flag: flag,
+                size: ExchangeDesign.Layout.flagSize
+            )
 
             Text(currency.rawValue)
                 .font(ExchangeDesign.Font.body)

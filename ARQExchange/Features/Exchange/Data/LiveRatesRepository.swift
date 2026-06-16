@@ -1,48 +1,26 @@
 import Foundation
 
 struct LiveRatesRepository: RatesRepository {
-    static let defaultStaleCacheMaxAge: TimeInterval = 15 * 60
     static let defaultFallbackDelayNanoseconds: UInt64 = 750_000_000
 
     private let ratesService: RatesService
-    private let cache: RatesSnapshotCaching
     private let logger: ExchangeLogger
-    private let staleCacheMaxAge: TimeInterval
     private let fallbackDelayNanoseconds: UInt64
-    private let now: @Sendable () -> Date
 
     init(
         ratesService: RatesService,
-        cache: RatesSnapshotCaching = DiskRatesSnapshotCache(),
         logger: ExchangeLogger = .disabled,
-        staleCacheMaxAge: TimeInterval = LiveRatesRepository.defaultStaleCacheMaxAge,
-        fallbackDelayNanoseconds: UInt64 = LiveRatesRepository.defaultFallbackDelayNanoseconds,
-        now: @escaping @Sendable () -> Date = { Date() }
+        fallbackDelayNanoseconds: UInt64 = LiveRatesRepository.defaultFallbackDelayNanoseconds
     ) {
         self.ratesService = ratesService
-        self.cache = cache
         self.logger = logger
-        self.staleCacheMaxAge = staleCacheMaxAge
         self.fallbackDelayNanoseconds = fallbackDelayNanoseconds
-        self.now = now
     }
 
     // MARK: - RatesRepository
 
-    func loadRatesSnapshot() async throws -> RatesRepositoryResult {
-        do {
-            let snapshot = try await fetchNetworkSnapshot()
-            await cache.store(snapshot)
-            return RatesRepositoryResult(snapshot: snapshot, source: .network)
-        } catch let cancellation as CancellationError {
-            throw cancellation
-        } catch {
-            if let cachedSnapshot = await freshCachedSnapshot() {
-                return RatesRepositoryResult(snapshot: cachedSnapshot, source: .staleCache)
-            }
-
-            throw error
-        }
+    func loadRatesSnapshot() async throws -> ExchangeRatesSnapshot {
+        try await fetchNetworkSnapshot()
     }
 
     // MARK: - Private
@@ -55,7 +33,6 @@ struct LiveRatesRepository: RatesRepository {
         return ExchangeRatesSnapshot(
             availableCurrencies: discovery.currencies,
             ratesByCurrency: ratesByCurrency(from: rates),
-            fetchedAt: now(),
             currencyDiscoverySource: discovery.source
         )
     }
@@ -93,20 +70,5 @@ struct LiveRatesRepository: RatesRepository {
         }
 
         logger.log(.currencyDiscoveryFallback(source: discovery.source))
-    }
-
-    private func freshCachedSnapshot() async -> ExchangeRatesSnapshot? {
-        guard let cachedSnapshot = await cache.snapshot() else {
-            return nil
-        }
-
-        let cacheAge = now().timeIntervalSince(cachedSnapshot.fetchedAt)
-        guard cacheAge <= staleCacheMaxAge else {
-            logger.log(.staleCacheExpired)
-            return nil
-        }
-
-        logger.log(.staleCacheServed)
-        return cachedSnapshot
     }
 }

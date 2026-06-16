@@ -1,4 +1,4 @@
-import Foundation
+import SwiftUI
 
 enum ExchangeLoadState: Equatable, Sendable {
     case idle
@@ -9,7 +9,7 @@ enum ExchangeLoadState: Equatable, Sendable {
 
 struct CurrencyPickerItem: Identifiable, Equatable, Sendable {
     let currency: CurrencyCode
-    let metadata: CurrencyMetadata
+    let flag: ImageResource?
     let isSelected: Bool
     let isSelectable: Bool
 
@@ -27,8 +27,6 @@ struct ExchangeCalculatorState: Equatable, Sendable {
     var topAmountText = ""
     var bottomAmountText = ""
     var activeField: InputField?
-    var isUsingStaleRates = false
-    var ratesFetchedAt: Date?
 
     var selectedCurrency: CurrencyCode {
         topCurrency == .usdc ? bottomCurrency : topCurrency

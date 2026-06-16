@@ -2,14 +2,10 @@ import Foundation
 import OSLog
 
 enum ExchangeLogEvent: Equatable, Sendable {
-    case ratesLoadSucceeded(source: RatesSnapshotSource, currencyDiscoverySource: CurrencyDiscoverySource)
+    case ratesLoadSucceeded(currencyDiscoverySource: CurrencyDiscoverySource)
     case ratesLoadFailed
     case currencyDiscoveryFallback(source: CurrencyDiscoverySource)
     case tickerMappingSkipped(book: String, reason: String)
-    case staleCacheServed
-    case staleCacheExpired
-    case cacheReadFailed(reason: String)
-    case cacheWriteFailed(reason: String)
 }
 
 struct ExchangeLogger: Sendable {
@@ -48,8 +44,7 @@ private extension ExchangeLogEvent {
 
     var isDiagnostic: Bool {
         switch self {
-        case .currencyDiscoveryFallback, .tickerMappingSkipped, .staleCacheServed, .staleCacheExpired,
-                .cacheReadFailed, .cacheWriteFailed:
+        case .currencyDiscoveryFallback, .tickerMappingSkipped:
             return true
         case .ratesLoadSucceeded, .ratesLoadFailed:
             return false
@@ -58,13 +53,12 @@ private extension ExchangeLogEvent {
 
     func writeEvent(to logger: Logger) {
         switch self {
-        case let .ratesLoadSucceeded(source, currencyDiscoverySource):
+        case let .ratesLoadSucceeded(currencyDiscoverySource):
             let discoverySource = currencyDiscoverySource.rawValue
-            logger.info("rates_load_succeeded source=\(source.rawValue, privacy: .public) discovery=\(discoverySource, privacy: .public)")
+            logger.info("rates_load_succeeded discovery=\(discoverySource, privacy: .public)")
         case .ratesLoadFailed:
             logger.error("rates_load_failed")
-        case .currencyDiscoveryFallback, .tickerMappingSkipped, .staleCacheServed, .staleCacheExpired,
-                .cacheReadFailed, .cacheWriteFailed:
+        case .currencyDiscoveryFallback, .tickerMappingSkipped:
             break
         }
     }
@@ -75,14 +69,6 @@ private extension ExchangeLogEvent {
             logger.warning("currency_discovery_fallback source=\(source.rawValue, privacy: .public)")
         case let .tickerMappingSkipped(book, reason):
             logger.warning("ticker_mapping_skipped book=\(book, privacy: .public) reason=\(reason, privacy: .public)")
-        case .staleCacheServed:
-            logger.warning("stale_cache_served")
-        case .staleCacheExpired:
-            logger.warning("stale_cache_expired")
-        case let .cacheReadFailed(reason):
-            logger.warning("rates_cache_read_failed reason=\(reason, privacy: .public)")
-        case let .cacheWriteFailed(reason):
-            logger.error("rates_cache_write_failed reason=\(reason, privacy: .public)")
         case .ratesLoadSucceeded, .ratesLoadFailed:
             break
         }
