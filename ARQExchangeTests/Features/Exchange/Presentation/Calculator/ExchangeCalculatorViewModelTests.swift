@@ -50,7 +50,7 @@ final class ExchangeCalculatorViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.state.selectedCurrency, .mxn)
     }
 
-    func testStaleRepositoryResultMarksStateAndDisplaysStaleCopy() async {
+    func testStaleRepositoryResultMarksStateAndDisplaysNormalTicker() async {
         let fetchedAt = Date(timeIntervalSince1970: 1_780_000_000)
         let viewModel = makeViewModel(
             result: .success(
@@ -68,8 +68,7 @@ final class ExchangeCalculatorViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.state.loadState, .loaded)
         XCTAssertTrue(viewModel.state.isUsingStaleRates)
         XCTAssertEqual(viewModel.state.ratesFetchedAt, fetchedAt)
-        XCTAssertTrue(viewModel.rateText.contains("1 USDc = 18.4097 MXN"))
-        XCTAssertTrue(viewModel.rateText.contains("last available"))
+        XCTAssertEqual(viewModel.rateText, "1 USDc = 18.4097 MXN")
     }
 
     func testEnteringTopUSDcCalculatesBottomLocalAmount() async {

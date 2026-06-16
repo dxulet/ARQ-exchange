@@ -30,8 +30,7 @@ final class ExchangeCalculatorViewModel: ObservableObject {
             return ExchangeCalculatorCopy.rateUnavailable
         }
 
-        let rateText = RateFormatter.string(from: displayRate, quote: state.selectedCurrency)
-        return state.isUsingStaleRates ? ExchangeCalculatorCopy.staleRateText(rateText, fetchedAt: state.ratesFetchedAt) : rateText
+        return RateFormatter.string(from: displayRate, quote: state.selectedCurrency)
     }
 
     var currencyPickerItems: [CurrencyPickerItem] {
