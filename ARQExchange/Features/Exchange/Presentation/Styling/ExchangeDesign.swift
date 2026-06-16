@@ -33,4 +33,10 @@ enum ExchangeDesign {
         static let closeIcon = SwiftUI.Font.system(size: 20, weight: .regular)
         static let checkmark = SwiftUI.Font.system(size: 11, weight: .bold)
     }
+
+    enum Tracking {
+        static let title: CGFloat = -0.6
+        static let sheetTitle: CGFloat = -0.48
+        static let body: CGFloat = 0.32
+    }
 }

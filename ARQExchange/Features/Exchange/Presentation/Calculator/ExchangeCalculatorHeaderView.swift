@@ -6,14 +6,13 @@ struct ExchangeCalculatorHeaderView: View {
 
     private enum Metrics {
         static let bottomPadding: CGFloat = 24
-        static let titleTracking: CGFloat = -0.6
     }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(ExchangeCalculatorCopy.title)
                 .font(ExchangeDesign.Font.title)
-                .tracking(Metrics.titleTracking)
+                .tracking(ExchangeDesign.Tracking.title)
                 .foregroundStyle(ExchangeDesign.Colors.contentPrimary)
                 .lineLimit(1)
                 .minimumScaleFactor(ExchangeDesign.Layout.minimumScaleFactor)
@@ -24,6 +23,7 @@ struct ExchangeCalculatorHeaderView: View {
                 } else if let rateText {
                     Text(rateText)
                         .font(ExchangeDesign.Font.rate)
+                        .tracking(ExchangeDesign.Tracking.body)
                         .foregroundStyle(ExchangeDesign.Colors.brand)
                         .lineLimit(1)
                         .minimumScaleFactor(ExchangeDesign.Layout.minimumScaleFactor)

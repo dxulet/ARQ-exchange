@@ -61,6 +61,7 @@ private struct LoadingAmountRow: View {
 
             Text(currency.rawValue)
                 .font(ExchangeDesign.Font.body)
+                .tracking(ExchangeDesign.Tracking.body)
                 .foregroundStyle(ExchangeDesign.Colors.contentPrimary.opacity(0.38))
                 .lineLimit(1)
 

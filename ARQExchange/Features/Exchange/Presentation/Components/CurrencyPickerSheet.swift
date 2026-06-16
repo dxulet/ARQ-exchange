@@ -74,6 +74,7 @@ struct CurrencyPickerSheet: View {
         HStack {
             Text(ExchangeCalculatorCopy.sheetTitle)
                 .font(ExchangeDesign.Font.sheetTitle)
+                .tracking(ExchangeDesign.Tracking.sheetTitle)
                 .foregroundStyle(ExchangeDesign.Colors.contentPrimary)
 
             Spacer()
@@ -149,6 +150,7 @@ private struct CurrencyPickerRow: View {
 
                 Text(option.currency.rawValue)
                     .font(ExchangeDesign.Font.body)
+                    .tracking(ExchangeDesign.Tracking.body)
                     .foregroundStyle(ExchangeDesign.Colors.contentPrimary)
                     .lineLimit(1)
 

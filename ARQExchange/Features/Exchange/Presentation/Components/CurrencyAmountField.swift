@@ -62,6 +62,7 @@ struct CurrencyAmountField: View {
 
             Text(currency.rawValue)
                 .font(ExchangeDesign.Font.body)
+                .tracking(ExchangeDesign.Tracking.body)
                 .foregroundStyle(ExchangeDesign.Colors.contentPrimary)
                 .lineLimit(1)
 
@@ -96,14 +97,21 @@ private struct FormattedAmountTextField: UIViewRepresentable {
         let textField = UITextField()
         textField.delegate = context.coordinator
         textField.keyboardType = .decimalPad
-        textField.textAlignment = .right
         textField.borderStyle = .none
         textField.backgroundColor = .clear
         textField.adjustsFontSizeToFitWidth = true
         textField.minimumFontSize = 13
         textField.clipsToBounds = true
-        textField.font = UIFont.systemFont(ofSize: 16, weight: .semibold)
-        textField.textColor = UIColor(ExchangeDesign.Colors.contentPrimary)
+        let textFont = UIFont.systemFont(ofSize: 16, weight: .semibold)
+        let textColor = UIColor(ExchangeDesign.Colors.contentPrimary)
+        textField.font = textFont
+        textField.textColor = textColor
+        textField.defaultTextAttributes = [
+            .font: textFont,
+            .foregroundColor: textColor,
+            .kern: ExchangeDesign.Tracking.body
+        ]
+        textField.textAlignment = .right
         textField.tintColor = UIColor(ExchangeDesign.Colors.brand)
         textField.setContentHuggingPriority(.defaultLow, for: .horizontal)
         textField.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
