@@ -23,6 +23,8 @@ final class ExchangeCalculatorViewModel: ObservableObject {
         state = initialState
     }
 
+    // MARK: - Derived State
+
     var rateText: String {
         guard let displayRate = state.displayedRate else {
             return ExchangeCalculatorCopy.rateUnavailable
@@ -42,6 +44,8 @@ final class ExchangeCalculatorViewModel: ObservableObject {
             )
         }
     }
+
+    // MARK: - Loading
 
     @discardableResult
     func loadIfNeeded() -> Task<Void, Never>? {
@@ -103,6 +107,8 @@ final class ExchangeCalculatorViewModel: ObservableObject {
         return task
     }
 
+    // MARK: - User Actions
+
     func updateAmount(_ rawText: String, field: InputField) {
         setState(stateReducer.amountUpdated(rawText: rawText, field: field, in: state))
     }
@@ -118,6 +124,8 @@ final class ExchangeCalculatorViewModel: ObservableObject {
     func swapCurrencies() {
         setState(stateReducer.currenciesSwapped(in: state))
     }
+
+    // MARK: - State Updates
 
     private func applyLoadedSnapshot(_ result: RatesRepositoryResult) {
         setState(

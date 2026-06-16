@@ -1,9 +1,13 @@
 import Foundation
 
+// MARK: - RatesSnapshotCaching
+
 protocol RatesSnapshotCaching: Sendable {
     func snapshot() async -> ExchangeRatesSnapshot?
     func store(_ snapshot: ExchangeRatesSnapshot) async
 }
+
+// MARK: - DiskRatesSnapshotCache
 
 actor DiskRatesSnapshotCache: RatesSnapshotCaching {
     private let fileURL: URL
@@ -17,6 +21,8 @@ actor DiskRatesSnapshotCache: RatesSnapshotCaching {
         self.fileURL = fileURL
         self.logger = logger
     }
+
+    // MARK: - RatesSnapshotCaching
 
     func snapshot() async -> ExchangeRatesSnapshot? {
         if let memorySnapshot {
@@ -42,6 +48,8 @@ actor DiskRatesSnapshotCache: RatesSnapshotCaching {
             logger.log(.cacheWriteFailed(reason: failureReason))
         }
     }
+
+    // MARK: - Private
 
     private static func defaultFileURL() -> URL {
         let cacheDirectory = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first
@@ -84,6 +92,8 @@ actor DiskRatesSnapshotCache: RatesSnapshotCaching {
     }
 }
 
+// MARK: - PersistedRatesSnapshot
+
 private struct PersistedRatesSnapshot: Codable, Sendable {
     private static let supportedSchemaVersion = 1
 
@@ -117,6 +127,8 @@ private struct PersistedRatesSnapshot: Codable, Sendable {
         )
     }
 }
+
+// MARK: - PersistedRatesSnapshotError
 
 private enum PersistedRatesSnapshotError: Error, CustomStringConvertible {
     case unsupportedSchemaVersion(Int)

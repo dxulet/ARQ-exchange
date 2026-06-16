@@ -15,6 +15,8 @@ enum ExchangeCalculationError: Error, Equatable, Sendable {
 }
 
 struct ExchangeCalculator: Sendable {
+    // MARK: - Public
+
     func convert(_ request: ConversionRequest) throws -> Decimal {
         guard request.rate.base.isUSDc else {
             throw ExchangeCalculationError.unsupportedBase(request.rate.base)
@@ -39,6 +41,8 @@ struct ExchangeCalculator: Sendable {
             target: request.targetCurrency
         )
     }
+
+    // MARK: - Private
 
     private func quoteRate(from rate: ExchangeRate, side: QuoteSide) -> Decimal {
         switch side {

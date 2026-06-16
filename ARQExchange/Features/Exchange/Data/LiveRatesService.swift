@@ -13,6 +13,8 @@ struct LiveRatesService: RatesService {
         self.logger = logger
     }
 
+    // MARK: - RatesService
+
     func fetchAvailableCurrencies() async throws -> CurrencyDiscoveryResult {
         do {
             let currencyCodeResponse = try await client.send(.tickerCurrencies, as: [String].self)
@@ -61,6 +63,8 @@ struct LiveRatesService: RatesService {
 
         return rates
     }
+
+    // MARK: - Private
 
     private func localCurrencies(from currencies: [CurrencyCode]) -> [CurrencyCode] {
         var seenCurrencies = Set<CurrencyCode>()

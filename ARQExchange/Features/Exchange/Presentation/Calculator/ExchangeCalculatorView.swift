@@ -1,5 +1,7 @@
 import SwiftUI
 
+// MARK: - ExchangeFeatureView
+
 @MainActor
 struct ExchangeFeatureView: View {
     @StateObject private var viewModel: ExchangeCalculatorViewModel
@@ -18,10 +20,14 @@ struct ExchangeFeatureView: View {
     }
 }
 
+// MARK: - ExchangeFeatureDependencies
+
 struct ExchangeFeatureDependencies: Sendable {
     let ratesRepository: RatesRepository
     let logger: ExchangeLogger
 }
+
+// MARK: - ExchangeCalculatorView
 
 @MainActor
 struct ExchangeCalculatorView: View {
@@ -41,6 +47,8 @@ struct ExchangeCalculatorView: View {
         self.viewModel = viewModel
     }
 
+    // MARK: - Derived State
+
     private var isAwaitingRates: Bool {
         switch viewModel.state.loadState {
         case .idle, .loading:
@@ -49,6 +57,8 @@ struct ExchangeCalculatorView: View {
             return false
         }
     }
+
+    // MARK: - Body
 
     var body: some View {
         ZStack {
@@ -99,6 +109,8 @@ struct ExchangeCalculatorView: View {
             .presentationBackground(ExchangeDesign.Colors.background)
         }
     }
+
+    // MARK: - Private
 
     @ViewBuilder
     private var calculator: some View {

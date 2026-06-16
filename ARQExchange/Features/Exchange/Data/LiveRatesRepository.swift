@@ -27,6 +27,8 @@ struct LiveRatesRepository: RatesRepository {
         self.now = now
     }
 
+    // MARK: - RatesRepository
+
     func loadRatesSnapshot() async throws -> RatesRepositoryResult {
         do {
             let snapshot = try await fetchNetworkSnapshot()
@@ -42,6 +44,8 @@ struct LiveRatesRepository: RatesRepository {
             throw error
         }
     }
+
+    // MARK: - Private
 
     private func fetchNetworkSnapshot() async throws -> ExchangeRatesSnapshot {
         let discovery = try await availableCurrenciesWithFallback()

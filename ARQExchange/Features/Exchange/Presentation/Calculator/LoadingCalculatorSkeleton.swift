@@ -1,5 +1,7 @@
 import SwiftUI
 
+// MARK: - LoadingCalculatorSkeleton
+
 struct LoadingCalculatorSkeleton: View {
     let topCurrency: CurrencyCode
     let bottomCurrency: CurrencyCode
@@ -17,6 +19,8 @@ struct LoadingCalculatorSkeleton: View {
         .accessibilityLabel(ExchangeCalculatorCopy.loadingAccessibilityLabel)
     }
 }
+
+// MARK: - LoadingAmountRow
 
 private struct LoadingAmountRow: View {
     let currency: CurrencyCode
@@ -67,12 +71,16 @@ private struct LoadingAmountRow: View {
     }
 }
 
+// MARK: - LoadingSwapButton
+
 private struct LoadingSwapButton: View {
     var body: some View {
         SwapButtonLabel(iconOpacity: 0.7, backgroundOpacity: 0.35)
         .accessibilityHidden(true)
     }
 }
+
+// MARK: - LoadingSkeletonCapsule
 
 struct LoadingSkeletonCapsule: View {
     let width: CGFloat

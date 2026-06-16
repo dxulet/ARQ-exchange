@@ -5,6 +5,8 @@ struct ExchangeCalculatorStateReducer: Sendable {
         self.calculator = calculator
     }
 
+    // MARK: - Public
+
     func loadedState(
         from snapshot: ExchangeRatesSnapshot,
         previousState: ExchangeCalculatorState,
@@ -87,6 +89,8 @@ struct ExchangeCalculatorStateReducer: Sendable {
 
         return nextState
     }
+
+    // MARK: - Private
 
     private func swapCurrencyPositions(in state: inout ExchangeCalculatorState) {
         let previousTopCurrency = state.topCurrency

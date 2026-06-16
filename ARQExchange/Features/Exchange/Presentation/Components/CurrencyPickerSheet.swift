@@ -1,5 +1,7 @@
 import SwiftUI
 
+// MARK: - CurrencyPickerMetrics
+
 private enum CurrencyPickerMetrics {
     static let horizontalPadding: CGFloat = 16
     static let topPadding: CGFloat = 30
@@ -18,6 +20,8 @@ private enum CurrencyPickerMetrics {
     static let selectionIndicatorStrokeWidth: CGFloat = 2
     static let disabledOpacity: CGFloat = 0.45
 }
+
+// MARK: - CurrencyPickerSheetLayout
 
 enum CurrencyPickerSheetLayout {
     static func preferredHeight(optionCount: Int) -> CGFloat {
@@ -39,6 +43,8 @@ enum CurrencyPickerSheetLayout {
         )
     }
 }
+
+// MARK: - CurrencyPickerSheet
 
 @MainActor
 struct CurrencyPickerSheet: View {
@@ -118,6 +124,8 @@ struct CurrencyPickerSheet: View {
         dismiss()
     }
 }
+
+// MARK: - CurrencyPickerRow
 
 @MainActor
 private struct CurrencyPickerRow: View {

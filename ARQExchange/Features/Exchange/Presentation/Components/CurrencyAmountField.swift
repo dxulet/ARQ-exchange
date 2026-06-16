@@ -1,6 +1,8 @@
 import SwiftUI
 import UIKit
 
+// MARK: - CurrencyAmountField
+
 @MainActor
 struct CurrencyAmountField: View {
     let field: InputField
@@ -76,6 +78,8 @@ struct CurrencyAmountField: View {
         }
     }
 }
+
+// MARK: - FormattedAmountTextField
 
 private struct FormattedAmountTextField: UIViewRepresentable {
     @Binding var text: String
@@ -178,6 +182,8 @@ private struct FormattedAmountTextField: UIViewRepresentable {
         }
     }
 }
+
+// MARK: - FormattedAmountTextFieldFocusState
 
 struct FormattedAmountTextFieldFocusState {
     enum Action: Equatable {

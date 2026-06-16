@@ -22,6 +22,8 @@ enum TickerMappingError: Error, Equatable, Sendable {
 }
 
 struct TickerMapper: Sendable {
+    // MARK: - Public
+
     func makeExchangeRate(from response: TickerResponse) throws -> ExchangeRate {
         let currencies = try currencyPair(from: response.currencyPairCode)
         let decimalRates = try decimalRates(from: response)
@@ -38,6 +40,8 @@ struct TickerMapper: Sendable {
             timestamp: response.timestamp
         )
     }
+
+    // MARK: - Private
 
     private func currencyPair(from currencyPairCode: String) throws -> (base: CurrencyCode, quote: CurrencyCode) {
         let currencyCodes = currencyPairCode.split(separator: "_", omittingEmptySubsequences: false)
