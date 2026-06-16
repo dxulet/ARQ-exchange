@@ -17,6 +17,9 @@ struct ExchangeFeatureView: View {
 
     var body: some View {
         ExchangeCalculatorView(viewModel: viewModel)
+            .task {
+                viewModel.loadIfNeeded()
+            }
     }
 }
 
@@ -88,10 +91,6 @@ struct ExchangeCalculatorView: View {
                 .padding(.bottom, Metrics.bottomPadding)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-
-        }
-        .task {
-            _ = viewModel.loadIfNeeded()
         }
         .sheet(isPresented: $isCurrencyPickerPresented) {
             let currencyPickerItems = viewModel.currencyPickerItems

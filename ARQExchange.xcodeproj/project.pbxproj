@@ -24,6 +24,7 @@
 		DA1000000000000000000001 /* ExchangeCalculatorErrorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA1000000000000000000002 /* ExchangeCalculatorErrorView.swift */; };
 		DA1000000000000000000003 /* ExchangeCalculatorHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA1000000000000000000004 /* ExchangeCalculatorHeaderView.swift */; };
 		DA1000000000000000000005 /* ExchangeCalculatorLoadedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA1000000000000000000006 /* ExchangeCalculatorLoadedView.swift */; };
+		DA4000000000000000000001 /* ExchangeCalculatorPreviews.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA4000000000000000000002 /* ExchangeCalculatorPreviews.swift */; };
 		DA1000000000000000000007 /* LoadingCalculatorSkeleton.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA1000000000000000000008 /* LoadingCalculatorSkeleton.swift */; };
 		AD1111111111111111111111 /* RatesRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD1111111111111111111112 /* RatesRepository.swift */; };
 		AD2222222222222222222221 /* LiveRatesRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD2222222222222222222222 /* LiveRatesRepository.swift */; };
@@ -89,6 +90,7 @@
 		DA1000000000000000000002 /* ExchangeCalculatorErrorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExchangeCalculatorErrorView.swift; sourceTree = "<group>"; };
 		DA1000000000000000000004 /* ExchangeCalculatorHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExchangeCalculatorHeaderView.swift; sourceTree = "<group>"; };
 		DA1000000000000000000006 /* ExchangeCalculatorLoadedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExchangeCalculatorLoadedView.swift; sourceTree = "<group>"; };
+		DA4000000000000000000002 /* ExchangeCalculatorPreviews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExchangeCalculatorPreviews.swift; sourceTree = "<group>"; };
 		DA1000000000000000000008 /* LoadingCalculatorSkeleton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadingCalculatorSkeleton.swift; sourceTree = "<group>"; };
 		AD1111111111111111111112 /* RatesRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RatesRepository.swift; sourceTree = "<group>"; };
 		AD2222222222222222222222 /* LiveRatesRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveRatesRepository.swift; sourceTree = "<group>"; };
@@ -345,6 +347,7 @@
 				DA1000000000000000000002 /* ExchangeCalculatorErrorView.swift */,
 				DA1000000000000000000004 /* ExchangeCalculatorHeaderView.swift */,
 				DA1000000000000000000006 /* ExchangeCalculatorLoadedView.swift */,
+				DA4000000000000000000002 /* ExchangeCalculatorPreviews.swift */,
 				B53AE3F1EC5B45179F4DD535 /* ExchangeCalculatorView.swift */,
 				F3B7855775A742739CF21C80 /* ExchangeCalculatorViewModel.swift */,
 				DA1000000000000000000008 /* LoadingCalculatorSkeleton.swift */,
@@ -492,6 +495,7 @@
 				DA1000000000000000000001 /* ExchangeCalculatorErrorView.swift in Sources */,
 				DA1000000000000000000003 /* ExchangeCalculatorHeaderView.swift in Sources */,
 				DA1000000000000000000005 /* ExchangeCalculatorLoadedView.swift in Sources */,
+				DA4000000000000000000001 /* ExchangeCalculatorPreviews.swift in Sources */,
 				9FE9961370EB4A8EBA9D5644 /* ExchangeCalculatorView.swift in Sources */,
 				E13D4E9E55FD4F5B8D6C5A5D /* ExchangeCalculatorViewModel.swift in Sources */,
 				E09022070FD74C9BA0F25F5F /* ExchangeDesign.swift in Sources */,
