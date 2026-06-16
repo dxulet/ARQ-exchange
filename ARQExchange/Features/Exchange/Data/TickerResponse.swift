@@ -17,6 +17,7 @@ struct TickerResponse: Decodable, Equatable, Sendable {
 enum TickerMappingError: Error, Equatable, Sendable {
     case invalidBook(String)
     case invalidDecimal(field: String, value: String)
+    case nonPositiveDecimal(field: String, value: String)
     case unsupportedPair(String)
 }
 
@@ -52,14 +53,21 @@ struct TickerMapper: Sendable {
     }
 
     private func decimalRates(from response: TickerResponse) throws -> (bid: Decimal, ask: Decimal) {
-        guard let askRate = DecimalParser.apiDecimal(from: response.ask) else {
-            throw TickerMappingError.invalidDecimal(field: "ask", value: response.ask)
-        }
-
-        guard let bidRate = DecimalParser.apiDecimal(from: response.bid) else {
-            throw TickerMappingError.invalidDecimal(field: "bid", value: response.bid)
-        }
+        let askRate = try positiveDecimal(from: response.ask, field: "ask")
+        let bidRate = try positiveDecimal(from: response.bid, field: "bid")
 
         return (bid: bidRate, ask: askRate)
+    }
+
+    private func positiveDecimal(from text: String, field: String) throws -> Decimal {
+        guard let decimal = DecimalParser.apiDecimal(from: text) else {
+            throw TickerMappingError.invalidDecimal(field: field, value: text)
+        }
+
+        guard decimal > 0 else {
+            throw TickerMappingError.nonPositiveDecimal(field: field, value: text)
+        }
+
+        return decimal
     }
 }

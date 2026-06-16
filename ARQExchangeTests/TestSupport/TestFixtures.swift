@@ -32,6 +32,13 @@ enum TestFixtures {
         timestamp: timestamp
     )
 
+    static let apiMXNTicker = TickerResponse(
+        ask: "17.4418000000",
+        bid: "17.4382000000",
+        currencyPairCode: "usdc_mxn",
+        timestamp: timestamp
+    )
+
     static func decimal(_ value: String, file: StaticString = #filePath, line: UInt = #line) -> Decimal {
         guard let decimal = DecimalParser.apiDecimal(from: value) else {
             XCTFail("Invalid decimal fixture: \(value)", file: file, line: line)

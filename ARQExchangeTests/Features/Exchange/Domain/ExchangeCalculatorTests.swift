@@ -59,6 +59,26 @@ final class ExchangeCalculatorTests: XCTestCase {
         XCTAssertEqual(result, TestFixtures.decimal("174.418"))
     }
 
+    func testNonPositiveRateThrows() {
+        let invalidRate = ExchangeRate(
+            base: .usdc,
+            quote: .mxn,
+            bid: Decimal(0),
+            ask: TestFixtures.decimal("-17.4418"),
+            timestamp: TestFixtures.timestamp
+        )
+
+        XCTAssertThrowsError(try calculator.convert(ConversionRequest(
+            amount: Decimal(10),
+            sourceCurrency: .usdc,
+            targetCurrency: .mxn,
+            rate: invalidRate,
+            quoteSide: .bid
+        ))) { error in
+            XCTAssertEqual(error as? ExchangeCalculationError, .nonPositiveRate)
+        }
+    }
+
     func testUnsupportedPairThrows() {
         XCTAssertThrowsError(try calculator.convert(ConversionRequest(
             amount: Decimal(10),

@@ -55,6 +55,10 @@ struct LiveRatesService: RatesService {
             }
         }
 
+        guard !rates.isEmpty else {
+            throw RatesServiceError.noUsableRates(requestedCurrencies: requestedCurrencies)
+        }
+
         return rates
     }
 

@@ -10,7 +10,7 @@ struct ConversionRequest: Equatable, Sendable {
 
 enum ExchangeCalculationError: Error, Equatable, Sendable {
     case unsupportedBase(CurrencyCode)
-    case zeroRate
+    case nonPositiveRate
     case unsupportedPair(source: CurrencyCode, target: CurrencyCode)
 }
 
@@ -22,8 +22,8 @@ struct ExchangeCalculator: Sendable {
 
         let quoteRate = quoteRate(from: request.rate, side: request.quoteSide)
 
-        guard quoteRate != 0 else {
-            throw ExchangeCalculationError.zeroRate
+        guard quoteRate > 0 else {
+            throw ExchangeCalculationError.nonPositiveRate
         }
 
         if request.sourceCurrency == request.rate.base, request.targetCurrency == request.rate.quote {

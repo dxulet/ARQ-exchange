@@ -67,6 +67,22 @@ final class NetworkingTests: XCTestCase {
         XCTAssertThrowsError(try TickerMapper().makeExchangeRate(from: tickerResponse))
     }
 
+    func testTickerResponseRejectsNonPositiveRates() {
+        let tickerResponse = TickerResponse(
+            ask: "0",
+            bid: "-17.4382000000",
+            currencyPairCode: "usdc_mxn",
+            timestamp: TestFixtures.timestamp
+        )
+
+        XCTAssertThrowsError(try TickerMapper().makeExchangeRate(from: tickerResponse)) { error in
+            XCTAssertEqual(
+                error as? TickerMappingError,
+                .nonPositiveDecimal(field: "ask", value: "0")
+            )
+        }
+    }
+
     func testLiveRatesServiceFallsBackWhenCurrenciesEndpointFails() async throws {
         let client = MockAPIClient(
             tickerCurrenciesResult: .failure(APIError.httpStatus(403, endpoint: .tickerCurrencies))
@@ -124,13 +140,7 @@ final class NetworkingTests: XCTestCase {
     }
 
     func testLiveRatesServiceFetchesRates() async throws {
-        let tickerResponse = TickerResponse(
-            ask: "17.4418000000",
-            bid: "17.4382000000",
-            currencyPairCode: "usdc_mxn",
-            timestamp: TestFixtures.timestamp
-        )
-        let client = MockAPIClient(tickersResult: .success([tickerResponse]))
+        let client = MockAPIClient(tickersResult: .success([TestFixtures.apiMXNTicker]))
         let service = LiveRatesService(client: client)
 
         let rates = try await service.fetchRates(for: [.mxn])
@@ -140,12 +150,6 @@ final class NetworkingTests: XCTestCase {
     }
 
     func testLiveRatesServiceSkipsInvalidTickerResponses() async throws {
-        let validTicker = TickerResponse(
-            ask: "17.4418000000",
-            bid: "17.4382000000",
-            currencyPairCode: "usdc_mxn",
-            timestamp: TestFixtures.timestamp
-        )
         let invalidTicker = TickerResponse(
             ask: "not-a-decimal",
             bid: "17.4382000000",
@@ -153,7 +157,7 @@ final class NetworkingTests: XCTestCase {
             timestamp: TestFixtures.timestamp
         )
         let client = MockAPIClient(
-            tickersResult: .success([validTicker, invalidTicker])
+            tickersResult: .success([TestFixtures.apiMXNTicker, invalidTicker])
         )
         let logRecorder = TestLogRecorder()
         let service = LiveRatesService(client: client, logger: logRecorder.logger)
@@ -170,6 +174,44 @@ final class NetworkingTests: XCTestCase {
         XCTAssertTrue(reason.contains("invalidDecimal"))
     }
 
+    func testLiveRatesServiceThrowsWhenNoUsableRatesAreReturned() async {
+        let invalidTicker = TickerResponse(
+            ask: "not-a-decimal",
+            bid: "17.4382000000",
+            currencyPairCode: "usdc_mxn",
+            timestamp: TestFixtures.timestamp
+        )
+        let client = MockAPIClient(tickersResult: .success([invalidTicker]))
+        let service = LiveRatesService(client: client)
+
+        do {
+            _ = try await service.fetchRates(for: [.mxn])
+            XCTFail("Expected no usable rates error")
+        } catch {
+            XCTAssertEqual(
+                error as? RatesServiceError,
+                .noUsableRates(requestedCurrencies: [.mxn])
+            )
+            XCTAssertEqual(client.requestedEndpoints, [.tickers(currencies: [.mxn])])
+        }
+    }
+
+    func testLiveRatesServiceThrowsWhenRatesResponseIsEmpty() async {
+        let client = MockAPIClient(tickersResult: .success([]))
+        let service = LiveRatesService(client: client)
+
+        do {
+            _ = try await service.fetchRates(for: [.mxn])
+            XCTFail("Expected no usable rates error")
+        } catch {
+            XCTAssertEqual(
+                error as? RatesServiceError,
+                .noUsableRates(requestedCurrencies: [.mxn])
+            )
+            XCTAssertEqual(client.requestedEndpoints, [.tickers(currencies: [.mxn])])
+        }
+    }
+
     func testLiveRatesServiceDoesNotRequestUSDcRate() async throws {
         let client = MockAPIClient()
         let service = LiveRatesService(client: client)
@@ -181,7 +223,7 @@ final class NetworkingTests: XCTestCase {
     }
 
     func testLiveRatesServiceRequestsOnlyUniqueLocalRates() async throws {
-        let client = MockAPIClient()
+        let client = MockAPIClient(tickersResult: .success([TestFixtures.apiMXNTicker]))
         let service = LiveRatesService(client: client)
 
         _ = try await service.fetchRates(for: [.usdc, .mxn, .mxn, .ars])

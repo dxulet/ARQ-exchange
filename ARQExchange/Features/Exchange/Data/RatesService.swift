@@ -10,6 +10,10 @@ struct CurrencyDiscoveryResult: Equatable, Sendable {
     let source: CurrencyDiscoverySource
 }
 
+enum RatesServiceError: Error, Equatable, Sendable {
+    case noUsableRates(requestedCurrencies: [CurrencyCode])
+}
+
 protocol RatesService: Sendable {
     func fetchAvailableCurrencies() async throws -> CurrencyDiscoveryResult
     func fetchRates(for currencies: [CurrencyCode]) async throws -> [ExchangeRate]
