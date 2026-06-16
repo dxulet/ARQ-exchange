@@ -32,6 +32,17 @@ final class ExchangeCalculatorViewModel: ObservableObject {
         return state.isUsingStaleRates ? ExchangeCalculatorCopy.staleRateText(rateText, fetchedAt: state.ratesFetchedAt) : rateText
     }
 
+    var currencyPickerItems: [CurrencyPickerItem] {
+        state.availableCurrencies.map { currency in
+            CurrencyPickerItem(
+                currency: currency,
+                metadata: CurrencyMetadataCatalog.metadata(for: currency),
+                isSelected: currency == state.selectedCurrency,
+                isSelectable: state.hasRate(for: currency)
+            )
+        }
+    }
+
     @discardableResult
     func loadIfNeeded() -> Task<Void, Never>? {
         guard state.loadState != .loaded, state.loadState != .loading else {

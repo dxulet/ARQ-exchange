@@ -50,16 +50,8 @@ struct ExchangeCalculatorState: Equatable, Sendable {
         return displayQuoteSide == .bid ? currentRate.bid : currentRate.ask
     }
 
-    var currencyPickerItems: [CurrencyPickerItem] {
-        availableCurrencies.map { currency in
-            let metadata = CurrencyMetadataCatalog.metadata(for: currency)
-            return CurrencyPickerItem(
-                currency: currency,
-                metadata: metadata,
-                isSelected: currency == selectedCurrency,
-                isSelectable: ratesByCurrency[currency] != nil
-            )
-        }
+    func hasRate(for currency: CurrencyCode) -> Bool {
+        ratesByCurrency[currency] != nil
     }
 
     func currency(for field: InputField) -> CurrencyCode {

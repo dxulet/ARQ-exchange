@@ -84,7 +84,7 @@ struct ExchangeCalculatorView: View {
             _ = viewModel.loadIfNeeded()
         }
         .sheet(isPresented: $isCurrencyPickerPresented) {
-            let currencyPickerItems = viewModel.state.currencyPickerItems
+            let currencyPickerItems = viewModel.currencyPickerItems
 
             CurrencyPickerSheet(
                 options: currencyPickerItems,
