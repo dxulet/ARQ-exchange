@@ -61,6 +61,15 @@ struct ExchangeCalculatorView: View {
         }
     }
 
+    private var headerRateText: String? {
+        switch viewModel.state.loadState {
+        case .failed:
+            return nil
+        default:
+            return viewModel.rateText
+        }
+    }
+
     // MARK: - Body
 
     var body: some View {
@@ -72,7 +81,7 @@ struct ExchangeCalculatorView: View {
                 VStack(alignment: .leading, spacing: 0) {
                     ExchangeCalculatorHeaderView(
                         isLoading: isAwaitingRates,
-                        rateText: viewModel.rateText
+                        rateText: headerRateText
                     )
 
                     switch viewModel.state.loadState {
