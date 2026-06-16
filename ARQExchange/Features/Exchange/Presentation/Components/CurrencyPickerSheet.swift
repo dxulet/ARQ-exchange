@@ -145,7 +145,8 @@ private struct CurrencyPickerRow: View {
                 selectionIndicator
             }
             .padding(.horizontal, CurrencyPickerMetrics.rowHorizontalPadding)
-            .frame(minHeight: CurrencyPickerMetrics.rowHeight)
+            .frame(maxWidth: .infinity, minHeight: CurrencyPickerMetrics.rowHeight, alignment: .leading)
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .disabled(!option.isSelectable)
