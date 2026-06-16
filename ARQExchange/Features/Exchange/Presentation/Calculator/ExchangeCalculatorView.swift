@@ -27,6 +27,7 @@ struct ExchangeFeatureDependencies: Sendable {
 struct ExchangeCalculatorView: View {
     @ObservedObject private var viewModel: ExchangeCalculatorViewModel
     @State private var isCurrencyPickerPresented = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @FocusState private var focusedAmountField: InputField?
 
     private enum Metrics {
@@ -112,7 +113,7 @@ struct ExchangeCalculatorView: View {
                 topAmountText: amountBinding(for: .top),
                 bottomAmountText: amountBinding(for: .bottom),
                 focusedField: $focusedAmountField,
-                onSwapCurrencies: viewModel.swapCurrencies,
+                onSwapCurrencies: swapCurrencies,
                 onPresentCurrencyPicker: presentCurrencyPicker
             )
         }
@@ -127,6 +128,18 @@ struct ExchangeCalculatorView: View {
 
     private func retryRatesLoad() {
         viewModel.retry()
+    }
+
+    private func swapCurrencies() {
+        let shouldRestoreFocus = focusedAmountField != nil
+
+        withAnimation(reduceMotion ? nil : .interactiveSpring(response: 0.28, dampingFraction: 0.86, blendDuration: 0)) {
+            viewModel.swapCurrencies()
+        }
+
+        if shouldRestoreFocus {
+            focusedAmountField = viewModel.state.activeField
+        }
     }
 
     private func presentCurrencyPicker() {

@@ -17,3 +17,13 @@ struct SwapButtonLabel: View {
             .frame(width: ExchangeDesign.Layout.minimumHitTarget, height: ExchangeDesign.Layout.minimumHitTarget)
     }
 }
+
+struct SwapButtonStyle: ButtonStyle {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(reduceMotion || !configuration.isPressed ? 1 : 0.96)
+            .animation(reduceMotion ? nil : .easeOut(duration: 0.14), value: configuration.isPressed)
+    }
+}

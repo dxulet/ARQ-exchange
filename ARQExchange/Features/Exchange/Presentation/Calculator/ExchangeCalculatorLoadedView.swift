@@ -11,31 +11,64 @@ struct ExchangeCalculatorLoadedView: View {
 
     var body: some View {
         ZStack {
-            VStack(spacing: ExchangeDesign.Layout.rowSpacing) {
-                amountField(for: .top, amountText: topAmountText)
-                amountField(for: .bottom, amountText: bottomAmountText)
+            ZStack(alignment: .top) {
+                ForEach(currencies) { currency in
+                    amountField(for: currency)
+                }
             }
+            .frame(height: rowsHeight, alignment: .top)
 
             Button(action: onSwapCurrencies) {
                 SwapButtonLabel()
             }
-            .buttonStyle(.plain)
+            .buttonStyle(SwapButtonStyle())
             .accessibilityLabel(ExchangeCalculatorCopy.swapAccessibilityLabel)
             .disabled(state.loadState != .loaded)
         }
     }
 
-    private func amountField(for field: InputField, amountText: Binding<String>) -> some View {
-        let currency = state.currency(for: field)
+    private var currencies: [CurrencyCode] {
+        [state.topCurrency, state.bottomCurrency]
+    }
+
+    private var rowsHeight: CGFloat {
+        ExchangeDesign.Layout.rowHeight * 2 + ExchangeDesign.Layout.rowSpacing
+    }
+
+    private func rowOffset(for field: InputField) -> CGFloat {
+        switch field {
+        case .top:
+            0
+        case .bottom:
+            ExchangeDesign.Layout.rowHeight + ExchangeDesign.Layout.rowSpacing
+        }
+    }
+
+    private func amountField(for currency: CurrencyCode) -> some View {
+        let field = field(for: currency)
 
         return CurrencyAmountField(
             field: field,
             currency: currency,
-            amountText: amountText,
+            amountText: amountText(for: field),
             isCurrencySelectable: !currency.isUSDc,
             hasRate: state.currentRate != nil,
             focusedField: focusedField,
             onSelectCurrency: onPresentCurrencyPicker
         )
+        .offset(y: rowOffset(for: field))
+    }
+
+    private func field(for currency: CurrencyCode) -> InputField {
+        currency == state.topCurrency ? .top : .bottom
+    }
+
+    private func amountText(for field: InputField) -> Binding<String> {
+        switch field {
+        case .top:
+            topAmountText
+        case .bottom:
+            bottomAmountText
+        }
     }
 }
