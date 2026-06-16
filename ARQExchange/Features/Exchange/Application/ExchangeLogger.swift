@@ -25,7 +25,9 @@ struct ExchangeLogger: Sendable {
 
     static let disabled = ExchangeLogger()
 
-    static func osLog(subsystem: String = Bundle.main.bundleIdentifier ?? "ARQExchange") -> ExchangeLogger {
+    private static let defaultSubsystem = Bundle.main.bundleIdentifier ?? "ARQExchange"
+
+    static func osLog(subsystem: String = ExchangeLogger.defaultSubsystem) -> ExchangeLogger {
         let eventLogger = Logger(subsystem: subsystem, category: "Exchange")
         let diagnosticsLogger = Logger(subsystem: subsystem, category: "ExchangeDiagnostics")
 

@@ -3,8 +3,8 @@ import SwiftUI
 @MainActor
 struct ExchangeCalculatorLoadedView: View {
     let state: ExchangeCalculatorState
-    let topAmountText: Binding<String>
-    let bottomAmountText: Binding<String>
+    @Binding var topAmountText: String
+    @Binding var bottomAmountText: String
     let focusedField: FocusState<InputField?>.Binding
     let onSwapCurrencies: () -> Void
     let onPresentCurrencyPicker: () -> Void
@@ -66,9 +66,9 @@ struct ExchangeCalculatorLoadedView: View {
     private func amountText(for field: InputField) -> Binding<String> {
         switch field {
         case .top:
-            topAmountText
+            $topAmountText
         case .bottom:
-            bottomAmountText
+            $bottomAmountText
         }
     }
 }

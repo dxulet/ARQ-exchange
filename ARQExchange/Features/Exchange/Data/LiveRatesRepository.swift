@@ -2,6 +2,7 @@ import Foundation
 
 struct LiveRatesRepository: RatesRepository {
     static let defaultStaleCacheMaxAge: TimeInterval = 15 * 60
+    static let defaultFallbackDelayNanoseconds: UInt64 = 750_000_000
 
     private let ratesService: RatesService
     private let cache: RatesSnapshotCaching
@@ -15,7 +16,7 @@ struct LiveRatesRepository: RatesRepository {
         cache: RatesSnapshotCaching = DiskRatesSnapshotCache(),
         logger: ExchangeLogger = .disabled,
         staleCacheMaxAge: TimeInterval = LiveRatesRepository.defaultStaleCacheMaxAge,
-        fallbackDelayNanoseconds: UInt64 = 750_000_000,
+        fallbackDelayNanoseconds: UInt64 = LiveRatesRepository.defaultFallbackDelayNanoseconds,
         now: @escaping @Sendable () -> Date = { Date() }
     ) {
         self.ratesService = ratesService
@@ -31,8 +32,8 @@ struct LiveRatesRepository: RatesRepository {
             let snapshot = try await fetchNetworkSnapshot()
             await cache.store(snapshot)
             return RatesRepositoryResult(snapshot: snapshot, source: .network)
-        } catch is CancellationError {
-            throw CancellationError()
+        } catch let cancellation as CancellationError {
+            throw cancellation
         } catch {
             if let cachedSnapshot = await freshCachedSnapshot() {
                 return RatesRepositoryResult(snapshot: cachedSnapshot, source: .staleCache)
