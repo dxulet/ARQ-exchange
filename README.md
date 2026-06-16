@@ -22,7 +22,7 @@ Native SwiftUI exchange calculator built as a small production product surface, 
 - Uses row order to select quote side:
   - USDc on top uses `bid`.
   - Local currency on top uses `ask`.
-- Keeps active input unformatted while typing and formats only calculated output as grouped numeric text.
+- Formats active input while typing and formats calculated output as grouped numeric text.
 - Keeps currency identity in the row label instead of adding a generic `$` prefix to every amount.
 - Preserves the USDc amount on swap where possible.
 - Shows stale cached rates if the latest rate request fails after a prior successful load.

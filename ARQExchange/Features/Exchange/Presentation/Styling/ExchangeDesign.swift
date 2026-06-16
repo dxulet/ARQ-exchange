@@ -27,7 +27,6 @@ enum ExchangeDesign {
         static let title = SwiftUI.Font.system(size: 30, weight: .bold)
         static let rate = SwiftUI.Font.system(size: 16, weight: .semibold)
         static let body = SwiftUI.Font.system(size: 16, weight: .semibold)
-        static let amount = SwiftUI.Font.system(size: 16, weight: .bold)
         static let sheetTitle = SwiftUI.Font.system(size: 24, weight: .semibold)
         static let chevron = SwiftUI.Font.system(size: 13, weight: .bold)
         static let swapIcon = SwiftUI.Font.system(size: 14, weight: .bold)

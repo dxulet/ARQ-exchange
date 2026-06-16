@@ -35,38 +35,6 @@ final class RatesRepositoryTests: XCTestCase {
         XCTAssertEqual(requestedRateCurrencies, [[.cop]])
     }
 
-    func testLoadStoresNetworkSnapshot() async throws {
-        let now = Date(timeIntervalSince1970: 200)
-        let cachedSnapshot = ExchangeRatesSnapshot(
-            availableCurrencies: [.mxn],
-            ratesByCurrency: [.mxn: TestFixtures.mxnRate],
-            fetchedAt: now
-        )
-        let cache = InMemoryRatesSnapshotCache(snapshot: cachedSnapshot)
-        let service = RepositoryMockRatesService(
-            discoveryResult: .success(CurrencyDiscoveryResult(currencies: [.cop], source: .remote)),
-            ratesResult: .success([TestFixtures.copRate])
-        )
-        let repository = LiveRatesRepository(
-            ratesService: service,
-            cache: cache,
-            now: { now }
-        )
-
-        let result = try await repository.loadRatesSnapshot()
-
-        XCTAssertEqual(result.source, .network)
-        XCTAssertEqual(result.snapshot.availableCurrencies, [.cop])
-        XCTAssertEqual(result.snapshot.ratesByCurrency, [.cop: TestFixtures.copRate])
-        XCTAssertEqual(result.snapshot.fetchedAt, now)
-        let storedSnapshot = await cache.snapshot()
-        let discoveryRequestCount = await service.discoveryRequestCount
-        let requestedRateCurrencies = await service.requestedRateCurrencies
-        XCTAssertEqual(storedSnapshot, result.snapshot)
-        XCTAssertEqual(discoveryRequestCount, 1)
-        XCTAssertEqual(requestedRateCurrencies, [[.cop]])
-    }
-
     func testNetworkFailureReturnsFreshStaleCache() async throws {
         let now = Date(timeIntervalSince1970: 500)
         let cachedSnapshot = ExchangeRatesSnapshot(

@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 @MainActor
 struct CurrencyAmountField: View {
@@ -18,22 +19,19 @@ struct CurrencyAmountField: View {
         HStack(spacing: 16) {
             currencyControl
 
-            TextField(
-                ExchangeCalculatorCopy.amountPlaceholder,
-                text: $amountText
+            FormattedAmountTextField(
+                text: $amountText,
+                placeholder: ExchangeCalculatorCopy.amountPlaceholder,
+                isEnabled: hasRate,
+                isFocused: focusedField.wrappedValue == field,
+                onFocusChange: updateFocus
             )
-            .keyboardType(.decimalPad)
-            .multilineTextAlignment(.trailing)
-            .font(ExchangeDesign.Font.amount)
-            .foregroundStyle(ExchangeDesign.Colors.contentPrimary)
-            .tint(ExchangeDesign.Colors.brand)
-            .lineLimit(1)
-            .minimumScaleFactor(ExchangeDesign.Layout.minimumScaleFactor)
-            .disabled(!hasRate)
-            .focused(focusedField, equals: field)
             .accessibilityLabel(ExchangeCalculatorCopy.amountAccessibilityLabel(for: currency))
+            .frame(height: ExchangeDesign.Layout.minimumHitTarget)
+            .frame(maxWidth: .infinity)
+            .clipped()
         }
-        .frame(minHeight: ExchangeDesign.Layout.rowHeight)
+        .frame(height: ExchangeDesign.Layout.rowHeight)
         .padding(.horizontal, ExchangeDesign.Layout.rowHorizontalPadding)
         .background(ExchangeDesign.Colors.fieldBackground, in: RoundedRectangle(cornerRadius: ExchangeDesign.Layout.rowCornerRadius))
         .opacity(hasRate ? 1 : ExchangeDesign.Layout.unavailableOpacity)
@@ -68,5 +66,153 @@ struct CurrencyAmountField: View {
             }
         }
         .fixedSize()
+    }
+
+    private func updateFocus(isFocused: Bool) {
+        if isFocused, focusedField.wrappedValue != field {
+            focusedField.wrappedValue = field
+        } else if focusedField.wrappedValue == field {
+            focusedField.wrappedValue = nil
+        }
+    }
+}
+
+private struct FormattedAmountTextField: UIViewRepresentable {
+    @Binding var text: String
+    let placeholder: String
+    let isEnabled: Bool
+    let isFocused: Bool
+    let onFocusChange: (Bool) -> Void
+
+    func makeUIView(context: Context) -> UITextField {
+        let textField = UITextField()
+        textField.delegate = context.coordinator
+        textField.keyboardType = .decimalPad
+        textField.textAlignment = .right
+        textField.borderStyle = .none
+        textField.backgroundColor = .clear
+        textField.adjustsFontSizeToFitWidth = true
+        textField.minimumFontSize = 13
+        textField.clipsToBounds = true
+        textField.font = UIFont.systemFont(ofSize: 16, weight: .semibold)
+        textField.textColor = UIColor(ExchangeDesign.Colors.contentPrimary)
+        textField.tintColor = UIColor(ExchangeDesign.Colors.brand)
+        textField.setContentHuggingPriority(.defaultLow, for: .horizontal)
+        textField.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        return textField
+    }
+
+    func updateUIView(_ textField: UITextField, context: Context) {
+        context.coordinator.parent = self
+        textField.placeholder = placeholder
+        textField.isEnabled = isEnabled
+
+        if textField.text != text {
+            textField.text = text
+            context.coordinator.moveCaretToEnd(in: textField)
+        }
+
+        switch context.coordinator.focusState.action(
+            isEnabled: isEnabled,
+            isFocused: isFocused,
+            isFirstResponder: textField.isFirstResponder
+        ) {
+        case .none:
+            break
+        case .becomeFirstResponder:
+            DispatchQueue.main.async {
+                textField.becomeFirstResponder()
+            }
+        case .resignFirstResponder:
+            DispatchQueue.main.async {
+                textField.resignFirstResponder()
+            }
+        }
+    }
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(parent: self)
+    }
+
+    final class Coordinator: NSObject, UITextFieldDelegate {
+        var parent: FormattedAmountTextField
+        var focusState = FormattedAmountTextFieldFocusState()
+
+        init(parent: FormattedAmountTextField) {
+            self.parent = parent
+        }
+
+        func textFieldDidBeginEditing(_ textField: UITextField) {
+            parent.onFocusChange(true)
+        }
+
+        func textFieldDidEndEditing(_ textField: UITextField) {
+            parent.onFocusChange(false)
+        }
+
+        func textField(
+            _ textField: UITextField,
+            shouldChangeCharactersIn range: NSRange,
+            replacementString string: String
+        ) -> Bool {
+            let currentText = textField.text ?? ""
+
+            guard let textRange = Range(range, in: currentText) else {
+                return false
+            }
+
+            let proposedText = currentText.replacingCharacters(in: textRange, with: string)
+            let formattedText = AmountFormatter.activeInputString(from: proposedText)
+            parent.text = formattedText
+            textField.text = formattedText
+            moveCaretToEnd(in: textField)
+            return false
+        }
+
+        func moveCaretToEnd(in textField: UITextField) {
+            guard let endPosition = textField.position(from: textField.endOfDocument, offset: 0) else {
+                return
+            }
+
+            textField.selectedTextRange = textField.textRange(from: endPosition, to: endPosition)
+        }
+    }
+}
+
+struct FormattedAmountTextFieldFocusState {
+    enum Action: Equatable {
+        case none
+        case becomeFirstResponder
+        case resignFirstResponder
+    }
+
+    private var hasObservedFocusedState = false
+
+    mutating func action(
+        isEnabled: Bool,
+        isFocused: Bool,
+        isFirstResponder: Bool
+    ) -> Action {
+        guard isEnabled else {
+            hasObservedFocusedState = false
+            return isFirstResponder ? .resignFirstResponder : .none
+        }
+
+        if isFocused {
+            hasObservedFocusedState = true
+            return isFirstResponder ? .none : .becomeFirstResponder
+        }
+
+        guard hasObservedFocusedState else {
+            return .none
+        }
+
+        guard isFirstResponder else {
+            hasObservedFocusedState = false
+            return .none
+        }
+
+        hasObservedFocusedState = false
+        return .resignFirstResponder
     }
 }

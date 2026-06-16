@@ -122,7 +122,12 @@ struct ExchangeCalculatorView: View {
     private func amountBinding(for field: InputField) -> Binding<String> {
         Binding(
             get: { viewModel.state.amountText(for: field) },
-            set: { viewModel.updateAmount($0, field: field) }
+            set: { rawText in
+                if focusedAmountField != field {
+                    focusedAmountField = field
+                }
+                viewModel.updateAmount(rawText, field: field)
+            }
         )
     }
 

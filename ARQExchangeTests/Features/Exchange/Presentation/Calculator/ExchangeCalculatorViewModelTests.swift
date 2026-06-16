@@ -77,7 +77,7 @@ final class ExchangeCalculatorViewModelTests: XCTestCase {
 
         viewModel.updateAmount(TestFixtures.usdcInput, field: .top)
 
-        XCTAssertEqual(viewModel.state.topAmountText, TestFixtures.usdcInput)
+        XCTAssertEqual(viewModel.state.topAmountText, "9,999")
         XCTAssertEqual(viewModel.state.bottomAmountText, "184,078.59")
     }
 
@@ -87,7 +87,7 @@ final class ExchangeCalculatorViewModelTests: XCTestCase {
         viewModel.updateAmount(TestFixtures.localInput, field: .bottom)
 
         XCTAssertEqual(viewModel.state.topAmountText, "10,017")
-        XCTAssertEqual(viewModel.state.bottomAmountText, TestFixtures.localInput)
+        XCTAssertEqual(viewModel.state.bottomAmountText, "184,410")
     }
 
     func testSelectingCurrencyRecalculatesEnteredAmount() async {
@@ -99,7 +99,7 @@ final class ExchangeCalculatorViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.state.selectedCurrency, .cop)
         XCTAssertEqual(viewModel.state.bottomCurrency, .cop)
         XCTAssertEqual(viewModel.rateText, "1 USDc = 3,832.42 COP")
-        XCTAssertEqual(viewModel.state.topAmountText, TestFixtures.usdcInput)
+        XCTAssertEqual(viewModel.state.topAmountText, "9,999")
         XCTAssertEqual(viewModel.state.bottomAmountText, "38,320,367.58")
     }
 
@@ -113,7 +113,7 @@ final class ExchangeCalculatorViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.state.bottomCurrency, .usdc)
         XCTAssertEqual(viewModel.rateText, "1 USDc = 18.441 MXN")
         XCTAssertEqual(viewModel.state.topAmountText, "184,391.56")
-        XCTAssertEqual(viewModel.state.bottomAmountText, TestFixtures.usdcInput)
+        XCTAssertEqual(viewModel.state.bottomAmountText, "9,999")
     }
 
     func testClearingActiveInputClearsConvertedAmount() async {
@@ -124,14 +124,6 @@ final class ExchangeCalculatorViewModelTests: XCTestCase {
 
         XCTAssertEqual(viewModel.state.topAmountText, "")
         XCTAssertEqual(viewModel.state.bottomAmountText, "")
-    }
-
-    func testCurrencySelectionChangesSelectedCurrency() async {
-        let viewModel = await loadedViewModel()
-
-        viewModel.selectCurrency(.cop)
-
-        XCTAssertEqual(viewModel.state.selectedCurrency, .cop)
     }
 
     private func loadedViewModel() async -> ExchangeCalculatorViewModel {

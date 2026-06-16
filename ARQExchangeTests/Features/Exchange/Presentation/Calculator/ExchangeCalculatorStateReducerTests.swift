@@ -44,9 +44,27 @@ final class ExchangeCalculatorStateReducerTests: XCTestCase {
             in: loadedState
         )
 
-        XCTAssertEqual(state.topAmountText, "9999")
+        XCTAssertEqual(state.topAmountText, "9,999")
         XCTAssertEqual(state.bottomAmountText, "184,078.59")
         XCTAssertEqual(state.activeField, .top)
+    }
+
+    func testAmountUpdatedNormalizesLeadingZeroesInActiveInput() {
+        let loadedState = ExchangeCalculatorState(
+            loadState: .loaded,
+            ratesByCurrency: [.mxn: TestFixtures.mxnRate],
+            topCurrency: .usdc,
+            bottomCurrency: .mxn
+        )
+
+        let state = reducer.amountUpdated(
+            rawText: "02437",
+            field: .top,
+            in: loadedState
+        )
+
+        XCTAssertEqual(state.topAmountText, "2,437")
+        XCTAssertEqual(state.bottomAmountText, "44,864.44")
     }
 
     func testCurrenciesSwappedPreservesUSDcAmountAndUsesAskRateForLocalTop() {
@@ -55,7 +73,7 @@ final class ExchangeCalculatorStateReducerTests: XCTestCase {
             ratesByCurrency: [.mxn: TestFixtures.mxnRate],
             topCurrency: .usdc,
             bottomCurrency: .mxn,
-            topAmountText: "9999",
+            topAmountText: "9,999",
             bottomAmountText: "184,078.59",
             activeField: .top
         )
@@ -65,7 +83,7 @@ final class ExchangeCalculatorStateReducerTests: XCTestCase {
         XCTAssertEqual(state.topCurrency, .mxn)
         XCTAssertEqual(state.bottomCurrency, .usdc)
         XCTAssertEqual(state.topAmountText, "184,391.56")
-        XCTAssertEqual(state.bottomAmountText, "9999")
+        XCTAssertEqual(state.bottomAmountText, "9,999")
         XCTAssertEqual(state.activeField, .bottom)
     }
 }

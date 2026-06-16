@@ -38,4 +38,41 @@ enum AmountFormatter {
     static func string(from value: Decimal) -> String {
         DisplayNumberFormatter.amountString(from: value)
     }
+
+    static func activeInputString(from rawInput: String) -> String {
+        let sanitizedInput = InputSanitizer.sanitize(rawInput)
+
+        guard !sanitizedInput.isEmpty else {
+            return ""
+        }
+
+        let parts = sanitizedInput.split(separator: ".", maxSplits: 1, omittingEmptySubsequences: false)
+        let wholePart = normalizedWholePart(String(parts.first ?? ""))
+        let formattedWholePart = groupedWholePart(wholePart)
+
+        guard parts.count == 2 else {
+            return formattedWholePart
+        }
+
+        return "\(formattedWholePart).\(parts[1])"
+    }
+
+    private static func normalizedWholePart(_ wholePart: String) -> String {
+        let normalized = wholePart.drop { $0 == "0" }
+        return normalized.isEmpty ? "0" : String(normalized)
+    }
+
+    private static func groupedWholePart(_ wholePart: String) -> String {
+        var grouped = ""
+
+        for (index, character) in wholePart.reversed().enumerated() {
+            if index > 0, index.isMultiple(of: 3) {
+                grouped.append(",")
+            }
+
+            grouped.append(character)
+        }
+
+        return String(grouped.reversed())
+    }
 }

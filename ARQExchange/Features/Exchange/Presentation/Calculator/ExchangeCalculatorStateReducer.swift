@@ -37,17 +37,17 @@ struct ExchangeCalculatorStateReducer: Sendable {
         field: InputField,
         in currentState: ExchangeCalculatorState
     ) -> ExchangeCalculatorState {
-        let sanitizedText = InputSanitizer.sanitize(rawText)
+        let formattedText = AmountFormatter.activeInputString(from: rawText)
         var nextState = currentState
         nextState.activeField = field
 
-        guard !sanitizedText.isEmpty else {
+        guard !formattedText.isEmpty else {
             nextState.topAmountText = ""
             nextState.bottomAmountText = ""
             return nextState
         }
 
-        nextState.setAmountText(sanitizedText, for: field)
+        nextState.setAmountText(formattedText, for: field)
         updateConvertedAmount(in: &nextState)
 
         return nextState
